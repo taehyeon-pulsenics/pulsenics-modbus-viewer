@@ -3,6 +3,7 @@ import { Tabs } from 'antd'
 import { useSocket } from '../../contexts/SocketContext'
 import DCView from './DCView'
 import ProbeStatusView from './ProbeStatusView'
+import ProbeACView from './ProbeACView'
 
 const items = [
   {
@@ -17,8 +18,8 @@ const items = [
   },
   {
     key: '3',
-    label: 'Tab 3',
-    children: 'Content of Tab Pane 3'
+    label: 'Probe AC',
+    children: <ProbeACView />
   },
   {
     key: '4',

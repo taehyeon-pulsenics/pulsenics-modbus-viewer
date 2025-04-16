@@ -1,28 +1,6 @@
 import { Server } from 'socket.io';
 import { ADDRESS_TYPE, readRegisters } from './modbus.js';
 
-let previousSnapShot = {
-  dc_store_co: null,
-  dc_store_ir: null,
-  dc_store_hr: null,
-
-  ac_store_1_co: null,
-  ac_store_1_di: null,
-  ac_store_1_ir: null,
-  ac_store_1_hr: null,
-
-  ac_store_2_ir: null,
-
-  ac_store_3_ir: null,
-
-  ac_store_4_ir: null,
-
-  non_sampling_store_co: null,
-  non_sampling_store_di: null,
-  non_sampling_store_ir: null,
-  non_sampling_store_hr: null,
-};
-
 /**
  * TBD
  *
@@ -38,7 +16,7 @@ export const pollModbus = async (io) => {
     2: {
       [ADDRESS_TYPE.COIL]: 3,
       [ADDRESS_TYPE.DISCRETE_INPUT]: 20,
-      [ADDRESS_TYPE.HOLDING_REGISTER]: 168,
+      [ADDRESS_TYPE.HOLDING_REGISTER]: 232,
       [ADDRESS_TYPE.INPUT_REGISTER]: 47284,
     },
     // 3: {

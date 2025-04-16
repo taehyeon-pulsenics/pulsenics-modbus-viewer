@@ -19,7 +19,9 @@ const ProbeStatusView = () => {
     nTotalFreqs,
     nSimulFreqs,
     dutId,
-    triggerId
+    triggerId,
+    experimentId,
+    metadata
   } = useContext(ModbusContext)
 
   const connectedCMUColumns = connectedCmus.map((_, index) => ({
@@ -89,6 +91,8 @@ const ProbeStatusView = () => {
       <Card size="small" title="Metadata">
         <p>DUT ID: {dutId}</p>
         <p>Trigger ID: {triggerId}</p>
+        <p>Experiment ID: {experimentId}</p>
+        <p>Metadata: {metadata}</p>
       </Card>
     </Space>
   )

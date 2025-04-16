@@ -18,26 +18,18 @@ export function SocketProvider({ children }) {
     setDcVoltage,
     setDcCurrent,
     setCmuVoltages,
-    sampleModeCoil,
     setSampleModeCoil,
-    startEISCoil,
     setStartEISCoil,
-    interruptCoil,
     setInterruptCoil,
-    minFreq,
     setMinFreq,
-    maxFreq,
     setMaxFreq,
-    amp,
     setAmp,
-    nTotalFreqs,
     setNTotalFreqs,
-    nSimulFreqs,
     setNSimulFreqs,
-    dutId,
     setDutId,
-    triggerId,
     setTriggerId,
+    setExperimentId,
+    setMetadata,
     setSampleStarted,
     setSampleCompleted,
     setConnectedCmus,
@@ -163,6 +155,56 @@ export function SocketProvider({ children }) {
       if (triggerIdLen > 0) {
         setTriggerId(buffer.subarray(268, 330).toString('utf-8').substring(0, triggerIdLen))
       }
+
+      const experimentIdLen = buffer.readUInt16BE(332)
+      if (experimentIdLen > 0) {
+        setExperimentId(buffer.subarray(334, 396).toString('utf-8').substring(0, experimentIdLen))
+      }
+
+      const metadataLen = buffer.readUInt16BE(398)
+      if (metadataLen > 0) {
+        setMetadata(buffer.subarray(400, 462).toString('utf-8').substring(0, metadataLen))
+      }
+    })
+
+    socketInstance.on('2_4', (data) => {
+      if (data === 'null') {
+        return
+      }
+
+      const buffer = Buffer.from(data)
+
+      setAcSampleTime(buffer.readDoubleBE(0))
+
+      const freqs = []
+      for (let i = 0; i < 120; i++) {
+        freqs.push(buffer.readFloatBE(8 + i * 4))
+      }
+      setFreqs(freqs)
+
+      const currentMags = []
+      for (let i = 0; i < 120; i++) {
+        currentMags.push(buffer.readFloatBE(8 + 480 + i * 4))
+      }
+      setCurrMag(currentMags)
+
+      const currentPhases = []
+      for (let i = 0; i < 120; i++) {
+        currentPhases.push(buffer.readFloatBE(8 + 480 * 2 + i * 4))
+      }
+      setcurrPha(currentPhases)
+
+      const probeVoltageMags = []
+      for (let i = 0; i < 120; i++) {
+        probeVoltageMags.push(buffer.readFloatBE(8 + 480 * 3 + i * 4))
+      }
+      setProbeVoltageMag(probeVoltageMags)
+
+      const probeVoltagePhases = []
+      for (let i = 0; i < 120; i++) {
+        probeVoltagePhases.push(buffer.readFloatBE(8 + 480 * 4 + i * 4))
+      }
+      setProbeVoltagePha(probeVoltagePhases)
     })
 
     // Cleanup listeners when the component unmounts
@@ -172,6 +214,7 @@ export function SocketProvider({ children }) {
       socketInstance.off('1_4')
       socketInstance.off('2_1')
       socketInstance.off('2_2')
+      socketInstance.off('2_3')
       socketInstance.off('connect')
       socketInstance.disconnect()
     }

@@ -21,6 +21,8 @@ const ModbusProvider = ({ children }) => {
   const [nSimulFreqs, setNSimulFreqs] = useState(0)
   const [dutId, setDutId] = useState('')
   const [triggerId, setTriggerId] = useState('')
+  const [experimentId, setExperimentId] = useState('')
+  const [metadata, setMetadata] = useState('')
   const [sampleStarted, setSampleStarted] = useState(false)
   const [sampleCompleted, setSampleCompleted] = useState(false)
   const [connectedCmus, setConnectedCmus] = useState([])
@@ -73,6 +75,10 @@ const ModbusProvider = ({ children }) => {
         dutId,
         setDutId,
         triggerId,
+        experimentId,
+        setExperimentId,
+        metadata,
+        setMetadata,
         setTriggerId,
         sampleStarted,
         setSampleStarted,

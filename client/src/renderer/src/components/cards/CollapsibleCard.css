@@ -1,0 +1,25 @@
+/* Styles for the header section */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Transition for the chevron icon */
+.chevron-icon {
+  transition: transform 300ms ease;
+}
+
+/* Rotate the chevron when collapsed */
+.chevron-icon.rotated {
+  transform: rotate(-90deg);
+}
+
+/* Base styles for the content container */
+.collapsible-content {
+  overflow: hidden;
+  transition:
+    height 300ms ease,
+    opacity 300ms ease;
+  opacity: 1;
+}

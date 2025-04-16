@@ -25,6 +25,7 @@
     "buffer": "^6.0.3",
     "lucide-react": "^0.488.0",
     "react-sticky-box": "^2.0.5",
+    "react-transition-group": "^4.4.5",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {

@@ -1,8 +1,9 @@
 import { useContext } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { CircleCheck, CircleX } from 'lucide-react'
-import { Card, Space } from 'antd'
+import { Space } from 'antd'
 import NumberTable from '../tables/NumberTable'
+import CollapsibleCard from '../cards/CollapsibleCard'
 
 const DCView = () => {
   const { updateDCSamplingRateCoil, newDcSamplingRate, dcVoltage, dcCurrent, cmuVoltages } =
@@ -10,13 +11,13 @@ const DCView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <Card size="small" title="Update DC Sampling Rate?">
+      <CollapsibleCard size="small" title="Update DC Sampling Rate?">
         {updateDCSamplingRateCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
-      </Card>
-      <Card size="small" title="DC Sampling Rate">
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="DC Sampling Rate">
         {newDcSamplingRate} /s
-      </Card>
-      <Card
+      </CollapsibleCard>
+      <CollapsibleCard
         size="small"
         title="DC Sampling Reading"
         styles={{
@@ -29,7 +30,7 @@ const DCView = () => {
         <p>Voltage: {dcVoltage}V</p>
 
         <CmuTables cmuVoltages={cmuVoltages} />
-      </Card>
+      </CollapsibleCard>
     </Space>
   )
 }
@@ -41,9 +42,9 @@ const CmuTables = ({ cmuVoltages }) => {
     const targetVoltages = cmuVoltages.slice(i * 24, i * 24 + 24)
 
     tables.push(
-      <Card size="small" title={`CMU ${i + 1} Voltages`}>
+      <CollapsibleCard size="small" title={`CMU ${i + 1} Voltages`}>
         <NumberTable numbers={targetVoltages} nColumns={8} />
-      </Card>
+      </CollapsibleCard>
     )
   }
 

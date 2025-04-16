@@ -1,7 +1,8 @@
 import { useContext } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
-import { Card, Space, Table } from 'antd'
+import { Space, Table } from 'antd'
+import CollapsibleCard from '../cards/CollapsibleCard'
 
 const ProbeStatusView = () => {
   const {
@@ -49,23 +50,23 @@ const ProbeStatusView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <Card size="small" title="Connected CMUs">
+      <CollapsibleCard size="small" title="Connected CMUs">
         <Table
           columns={connectedCMUColumns}
           dataSource={connectedCMUDataSource}
           pagination={false} // No pagination needed for a single row
           bordered // Optional: adds borders to the table
         />
-      </Card>
-      <Card size="small" title="AC Coil">
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="AC Coil">
         <p>Sample Mode: {sampleModeCoil ? 'Galvanostatic' : 'Potentiostatic'}</p>
         <p>Start EIS: {startEISCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}</p>
         <p>
           Interrupt EIS: {interruptCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
         </p>
-      </Card>
+      </CollapsibleCard>
 
-      <Card size="small" title="Probe Status">
+      <CollapsibleCard size="small" title="Probe Status">
         <p>
           Sample Started: {sampleStarted ? <CircleCheck color="green" /> : <CircleX color="red" />}
         </p>
@@ -80,20 +81,20 @@ const ProbeStatusView = () => {
         <p>
           Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
         </p>
-      </Card>
-      <Card size="small" title="Sampling Control">
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="Sampling Control">
         <p>Minimum Frequency: {minFreq} Hz</p>
         <p>Maximum Frequency: {maxFreq} Hz</p>
         <p>Amplitude: {amp} A</p>
         <p>Total Number of Frequencies: {nTotalFreqs}</p>
         <p>Number of Simultaneous Frequencies: {nSimulFreqs}</p>
-      </Card>
-      <Card size="small" title="Metadata">
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="Metadata">
         <p>DUT ID: {dutId}</p>
         <p>Trigger ID: {triggerId}</p>
         <p>Experiment ID: {experimentId}</p>
         <p>Metadata: {metadata}</p>
-      </Card>
+      </CollapsibleCard>
     </Space>
   )
 }

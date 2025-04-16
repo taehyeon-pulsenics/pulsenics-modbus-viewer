@@ -54,7 +54,22 @@ export function SocketProvider({ children }) {
     cmu3VoltageMag,
     setCmu3VoltageMag,
     cmu4VoltageMag,
-    setCmu4VoltageMag
+    setCmu4VoltageMag,
+    setCriticalFault,
+    setGeneralFault,
+    setDutOvervoltageFault,
+    setDutUndervoltageFault,
+    setTransientDetected,
+    setOverTemperatureDetected,
+    setGridConnectionFault,
+    setOpenCircultDetected,
+    setOverPowerLimitDetected,
+    setOverCurrentLimitDetected,
+    setEisControlError,
+    setEStopPreventingSample,
+    setDutForcedDisconnectModePreventingSample,
+    setFullDisconnectModePreventingSample,
+    setLowerPowerModePreventingSample
   } = useContext(ModbusContext)
 
   useEffect(() => {
@@ -205,6 +220,30 @@ export function SocketProvider({ children }) {
         probeVoltagePhases.push(buffer.readFloatBE(8 + 480 * 4 + i * 4))
       }
       setProbeVoltagePha(probeVoltagePhases)
+    })
+
+    socketInstance.on('6_2', (data) => {
+      if (data === 'null') {
+        return
+      }
+
+      const registers = new Uint16Array(data)
+
+      setCriticalFault(!!registers[0])
+      setGeneralFault(!!registers[1])
+      setDutOvervoltageFault(!!registers[2])
+      setDutUndervoltageFault(!!registers[3])
+      setTransientDetected(!!registers[4])
+      setOverTemperatureDetected(!!registers[5])
+      setGridConnectionFault(!!registers[6])
+      setOpenCircultDetected(!!registers[7])
+      setOverPowerLimitDetected(!!registers[8])
+      setOverCurrentLimitDetected(!!registers[9])
+      setEisControlError(!!registers[10])
+      setEStopPreventingSample(!!registers[11])
+      setDutForcedDisconnectModePreventingSample(!!registers[12])
+      setFullDisconnectModePreventingSample(!!registers[13])
+      setLowerPowerModePreventingSample(!!registers[14])
     })
 
     // Cleanup listeners when the component unmounts

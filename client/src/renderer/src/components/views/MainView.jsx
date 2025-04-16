@@ -5,6 +5,7 @@ import { useSocket } from '../../contexts/SocketContext'
 import DCView from './DCView'
 import ProbeStatusView from './ProbeStatusView'
 import ProbeACView from './ProbeACView'
+import ErrorSignalsView from './ErrorSignalsView'
 
 const items = [
   {
@@ -23,19 +24,9 @@ const items = [
     children: <ProbeACView />
   },
   {
-    key: '4',
-    label: 'Tab 4',
-    children: 'Content of Tab Pane 4'
-  },
-  {
-    key: '5',
-    label: 'Tab 5',
-    children: 'Content of Tab Pane 5'
-  },
-  {
-    key: '6',
-    label: 'Tab 6',
-    children: 'Content of Tab Pane 6'
+    key: '10',
+    label: 'Error Signals',
+    children: <ErrorSignalsView />
   }
 ]
 

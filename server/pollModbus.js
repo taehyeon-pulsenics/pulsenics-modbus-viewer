@@ -28,12 +28,12 @@ export const pollModbus = async (io) => {
     // 5: {
     //   [ADDRESS_TYPE.INPUT_REGISTER]: 47284,
     // },
-    // 6: {
-    //   [ADDRESS_TYPE.COIL]: 14,
-    //   [ADDRESS_TYPE.DISCRETE_INPUT]: 15,
-    //   [ADDRESS_TYPE.HOLDING_REGISTER]: 10,
-    //   [ADDRESS_TYPE.INPUT_REGISTER]: 325,
-    // },
+    6: {
+      [ADDRESS_TYPE.COIL]: 14,
+      [ADDRESS_TYPE.DISCRETE_INPUT]: 15,
+      [ADDRESS_TYPE.HOLDING_REGISTER]: 10,
+      [ADDRESS_TYPE.INPUT_REGISTER]: 325,
+    },
   };
 
   for (const unitId of Object.keys(nRegistersMap)) {

@@ -1,11 +1,5 @@
-import React, { useEffect, useRef } from 'react'
-import { WidthProvider, Responsive } from 'react-grid-layout'
+import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
-
-// Wrap Responsive grid with WidthProvider to have width automatically computed.
-const ReactGridLayout = WidthProvider(Responsive)
 
 /**
  * Chart component renders a simple d3 line chart.
@@ -102,76 +96,4 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
   )
 }
 
-/**
- * ChartGrid component:
- * - Accepts 5 parallel arrays: frequencies, currMags, currPhases, volMags, and volPhases.
- * - Uses react-grid-layout to create a 1-row x 4-column grid.
- * - Each grid cell holds a Chart component.
- */
-const BodePlots = ({ frequencies, currMags, currPhases, volMags, volPhases }) => {
-  // Define a layout with 4 grid items arranged in 1 row
-  const layout = [
-    { i: 'chart1', x: 0, y: 0, w: 1, h: 1 },
-    { i: 'chart2', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'chart3', x: 2, y: 0, w: 1, h: 1 },
-    { i: 'chart4', x: 3, y: 0, w: 1, h: 1 }
-  ]
-
-  // Define grid properties: 100% width of the parent, fixed overall height.
-  const gridStyle = {
-    width: '100%',
-    height: '400px' // Fixed height for the entire grid container
-  }
-
-  return (
-    <div style={gridStyle}>
-      <ReactGridLayout
-        className="layout"
-        layouts={{ lg: layout, md: layout, sm: layout, xs: layout, xxs: layout }}
-        cols={{ lg: 4, md: 4, sm: 4, xs: 4, xxs: 4 }}
-        rowHeight={400} // Each grid cell takes the entire container height.
-        isDraggable={false}
-        isResizable={false}
-      >
-        <div key="chart1">
-          <BodePlot
-            frequencies={frequencies}
-            measurements={currMags}
-            chartId="chart1"
-            yAxisLabel="Current Magnitude (A)"
-            chartTitle="Current Magnitude"
-          />
-        </div>
-        <div key="chart2">
-          <BodePlot
-            frequencies={frequencies}
-            measurements={currPhases}
-            chartId="chart2"
-            yAxisLabel="Current Phase (degree)"
-            chartTitle="Current Phase"
-          />
-        </div>
-        <div key="chart3">
-          <BodePlot
-            frequencies={frequencies}
-            measurements={volMags}
-            chartId="chart3"
-            yAxisLabel="Voltage Magnitude (V)"
-            chartTitle="Voltage Magnitude"
-          />
-        </div>
-        <div key="chart4">
-          <BodePlot
-            frequencies={frequencies}
-            measurements={volPhases}
-            chartId="chart4"
-            yAxisLabel="Voltage Phase (degree)"
-            chartTitle="Voltage Phase"
-          />
-        </div>
-      </ReactGridLayout>
-    </div>
-  )
-}
-
-export default BodePlots
+export default BodePlot

@@ -93,7 +93,7 @@ const ProbeStatusView = () => {
         <p>DUT ID: {dutId}</p>
         <p>Trigger ID: {triggerId}</p>
         <p>Experiment ID: {experimentId}</p>
-        <p>Metadata: {metadata}</p>
+        <p>Tag: {metadata}</p>
       </CollapsibleCard>
     </Space>
   )

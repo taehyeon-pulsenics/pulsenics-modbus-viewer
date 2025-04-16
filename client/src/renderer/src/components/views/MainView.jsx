@@ -1,5 +1,6 @@
 import React from 'react'
-import { Tabs } from 'antd'
+import { Tabs, theme } from 'antd'
+import StickyBox from 'react-sticky-box'
 import { useSocket } from '../../contexts/SocketContext'
 import DCView from './DCView'
 import ProbeStatusView from './ProbeStatusView'
@@ -40,8 +41,17 @@ const items = [
 
 const MainView = () => {
   useSocket()
+  const {
+    token: { colorBgContainer }
+  } = theme.useToken()
 
-  return <Tabs defaultActiveKey="1" items={items} />
+  const renderTabBar = (props, DefaultTabBar) => (
+    <StickyBox offsetTop={0} offsetBottom={0} style={{ zIndex: 1 }}>
+      <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
+    </StickyBox>
+  )
+
+  return <Tabs defaultActiveKey="1" items={items} renderTabBar={renderTabBar} />
 }
 
 export default MainView

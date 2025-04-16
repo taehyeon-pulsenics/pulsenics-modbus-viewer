@@ -30,7 +30,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
     const containerHeight = containerRect.height
 
     // Define margins and inner dimensions
-    const margin = { top: 20, right: 20, bottom: 30, left: 50 }
+    const margin = { top: 20, right: 20, bottom: 50, left: 50 }
     const width = containerWidth - margin.left - margin.right
     const height = containerHeight - margin.top - margin.bottom
 
@@ -77,7 +77,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
       .append('text')
       .attr('class', 'x-axis-label')
       .attr('x', width / 2)
-      .attr('y', height + margin.bottom - 5)
+      .attr('y', height + margin.bottom - 15)
       .attr('text-anchor', 'middle')
       .text('Frequency (Hz)')
 

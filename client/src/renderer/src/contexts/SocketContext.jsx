@@ -69,7 +69,14 @@ export function SocketProvider({ children }) {
     setEStopPreventingSample,
     setDutForcedDisconnectModePreventingSample,
     setFullDisconnectModePreventingSample,
-    setLowerPowerModePreventingSample
+    setLowerPowerModePreventingSample,
+    setPowerLimit,
+    setCurrentLimit,
+    setDutOvervoltageLimit,
+    setDutUndervoltageLimit,
+    setVoltageDeviationLimit,
+    setProbeSn,
+    setClientMsg
   } = useContext(ModbusContext)
 
   useEffect(() => {
@@ -246,6 +253,30 @@ export function SocketProvider({ children }) {
       setLowerPowerModePreventingSample(!!registers[14])
     })
 
+    socketInstance.on('6_4', (data) => {
+      if (data === 'null') {
+        return
+      }
+
+      const buffer = Buffer.from(data)
+
+      setPowerLimit(buffer.readFloatBE(0))
+      setCurrentLimit(buffer.readFloatBE(4))
+      setDutOvervoltageLimit(buffer.readFloatBE(8))
+      setDutUndervoltageLimit(buffer.readFloatBE(12))
+      setVoltageDeviationLimit(buffer.readFloatBE(16))
+
+      const probeSnLen = buffer.readUInt16BE(200)
+      if (probeSnLen > 0) {
+        setProbeSn(buffer.subarray(202, 232).toString('utf-8').substring(0, probeSnLen))
+      }
+
+      const clientMsgLen = buffer.readUInt16BE(400)
+      if (clientMsgLen > 0) {
+        setClientMsg(buffer.subarray(402, 648).toString('utf-8').substring(0, clientMsgLen))
+      }
+    })
+
     // Cleanup listeners when the component unmounts
     return () => {
       socketInstance.off('1_1')
@@ -254,6 +285,9 @@ export function SocketProvider({ children }) {
       socketInstance.off('2_1')
       socketInstance.off('2_2')
       socketInstance.off('2_3')
+      socketInstance.off('2_4')
+      socketInstance.off('6_2')
+      socketInstance.off('6_4')
       socketInstance.off('connect')
       socketInstance.disconnect()
     }

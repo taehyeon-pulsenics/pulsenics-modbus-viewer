@@ -18,7 +18,7 @@ const ProbeACView = () => {
           volPhases={probeVoltagePha.filter((v) => v !== 0.0)}
         />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Freqs">
+      <CollapsibleCard size="small" title="Frequencies">
         <NumberTable numbers={freqs} />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Current Magnitude">

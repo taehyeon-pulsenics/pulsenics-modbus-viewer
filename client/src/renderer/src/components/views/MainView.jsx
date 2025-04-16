@@ -6,6 +6,7 @@ import DCView from './DCView'
 import ProbeStatusView from './ProbeStatusView'
 import ProbeACView from './ProbeACView'
 import ErrorSignalsView from './ErrorSignalsView'
+import MiscView from './MiscView'
 
 const items = [
   {
@@ -24,9 +25,14 @@ const items = [
     children: <ProbeACView />
   },
   {
-    key: '10',
+    key: '4',
     label: 'Error Signals',
     children: <ErrorSignalsView />
+  },
+  {
+    key: '5',
+    label: 'Misc',
+    children: <MiscView />
   }
 ]
 

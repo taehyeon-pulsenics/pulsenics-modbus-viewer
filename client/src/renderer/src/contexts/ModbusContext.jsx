@@ -60,6 +60,15 @@ const ModbusProvider = ({ children }) => {
     useState(false)
   const [lowerPowerModePreventingSample, setLowerPowerModePreventingSample] = useState(false)
 
+  // misc (non-sampling store)
+  const [powerLimit, setPowerLimit] = useState(0)
+  const [currentLimit, setCurrentLimit] = useState(0)
+  const [dutOvervoltageLimit, setDutOvervoltageLimit] = useState(0)
+  const [dutUndervoltageLimit, setDutUndervoltageLimit] = useState(0)
+  const [voltageDeviationLimit, setVoltageDeviationLimit] = useState(0)
+  const [probeSn, setProbeSn] = useState('')
+  const [clientMsg, setClientMsg] = useState('')
+
   return (
     <ModbusContext.Provider
       value={{
@@ -158,7 +167,21 @@ const ModbusProvider = ({ children }) => {
         fullDisconnectModePreventingSample,
         setFullDisconnectModePreventingSample,
         lowerPowerModePreventingSample,
-        setLowerPowerModePreventingSample
+        setLowerPowerModePreventingSample,
+        powerLimit,
+        setPowerLimit,
+        currentLimit,
+        setCurrentLimit,
+        dutOvervoltageLimit,
+        setDutOvervoltageLimit,
+        dutUndervoltageLimit,
+        setDutUndervoltageLimit,
+        voltageDeviationLimit,
+        setVoltageDeviationLimit,
+        probeSn,
+        setProbeSn,
+        clientMsg,
+        setClientMsg
       }}
     >
       {children}

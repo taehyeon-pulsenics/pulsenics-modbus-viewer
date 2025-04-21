@@ -3,6 +3,7 @@ import { ModbusContext } from '../../contexts/ModbusContext'
 import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
 import { Space, Table } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
+import { useSocket } from '../../contexts/SocketContext'
 
 const ProbeStatusView = () => {
   const {
@@ -24,6 +25,7 @@ const ProbeStatusView = () => {
     experimentId,
     metadata
   } = useContext(ModbusContext)
+  const { config } = useSocket()
 
   const connectedCMUColumns = connectedCmus.map((_, index) => ({
     title: `CMU ${index + 1}`, // Column header
@@ -78,9 +80,11 @@ const ProbeStatusView = () => {
           Sample Received:{' '}
           {sampleReceived ? <CircleCheck color="green" /> : <CircleX color="red" />}
         </p>
-        <p>
-          Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
+        {!config.legacy && (
+          <p>
+            Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
+          </p>
+        )}
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Sampling Control">
         <p>Minimum Frequency: {minFreq} Hz</p>
@@ -89,12 +93,14 @@ const ProbeStatusView = () => {
         <p>Total Number of Frequencies: {nTotalFreqs}</p>
         <p>Number of Simultaneous Frequencies: {nSimulFreqs}</p>
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Metadata">
-        <p>DUT ID: {dutId}</p>
-        <p>Trigger ID: {triggerId}</p>
-        <p>Experiment ID: {experimentId}</p>
-        <p>Tag: {metadata}</p>
-      </CollapsibleCard>
+      {!config.legacy && (
+        <CollapsibleCard size="small" title="Metadata">
+          <p>DUT ID: {dutId}</p>
+          <p>Trigger ID: {triggerId}</p>
+          <p>Experiment ID: {experimentId}</p>
+          <p>Tag: {metadata}</p>
+        </CollapsibleCard>
+      )}
     </Space>
   )
 }

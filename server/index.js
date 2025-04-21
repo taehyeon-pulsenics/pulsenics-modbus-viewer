@@ -29,14 +29,37 @@ app.use(
     origin: 'http://localhost:5173',
   })
 );
+app.use(e.json());
 
 // Basic HTTP endpoint (if needed)
 app.get('/', (req, res) => {
   res.send('Modbus backend is running.');
 });
 
-app.get('/ip', (_, res) => {
-  res.send(CONFIG.probeIp);
+app.get('/config', (_, res) => {
+  res.send(CONFIG);
+});
+
+app.post('/config', async (req, res) => {
+  const body = req.body;
+
+  if (
+    body === undefined ||
+    body.probeIp === undefined ||
+    body.legacy === undefined
+  ) {
+    throw new Error('INCORRECT CONFIG');
+  }
+
+  await disconnect();
+
+  CONFIG.probeIp = body.probeIp;
+  CONFIG.legacy = body.legacy;
+  fs.writeFileSync('../config.json', JSON.stringify(CONFIG, null, 2));
+
+  await connect(CONFIG.probeIp);
+
+  res.send();
 });
 
 io.on('connection', (socket) => {
@@ -45,7 +68,12 @@ io.on('connection', (socket) => {
     await disconnect();
     CONFIG.probeIp = data;
     fs.writeFileSync('../config.json', JSON.stringify(CONFIG, null, 2));
-    await connect(data);
+    await connect(CONFIG.probeIp);
+  });
+  socket.on('change legacy', async (data) => {
+    CONFIG.legacy = !!new Uint16Array(data)[0];
+    console.log(CONFIG);
+    fs.writeFileSync('../config.json', JSON.stringify(CONFIG, null, 2));
   });
   socket.on('disconnect', () => {
     console.log('user disconnected');

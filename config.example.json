@@ -1,3 +1,4 @@
 {
-  "probeIp": "127.0.0.1"
+  "probeIp": "127.0.0.1",
+  "legacy": false
 }

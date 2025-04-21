@@ -22,4 +22,5 @@ try {
 
 module.exports = {
   probeIp: CONFIG.probeIp,
+  legacy: CONFIG.legacy,
 };

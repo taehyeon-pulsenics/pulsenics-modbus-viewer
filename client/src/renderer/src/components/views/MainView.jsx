@@ -10,7 +10,6 @@ import MiscView from './MiscView'
 import SettingModal from '../modals/SettingModal'
 import { Settings2 } from 'lucide-react'
 import { blue } from '@ant-design/colors'
-import axios from 'axios'
 
 import './MainView.css'
 
@@ -25,14 +24,13 @@ const items = [
 ]
 
 const MainView = () => {
-  const { socket } = useSocket()
+  const { config } = useSocket()
   const {
     token: { colorBgContainer }
   } = theme.useToken()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showIpAddressChangeAlert, setShowIpAddressChangeAlert] = useState(false)
-  const [ipAddress, setIpAddress] = useState('')
+  const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
 
   /**
    * Modal Control Functions
@@ -50,41 +48,24 @@ const MainView = () => {
   /**
    * Helper functions for Settings Modal
    */
-  const handleIpChange = (newIp) => {
-    setIpAddress(newIp)
-    socket.emit('change ip', newIp)
-    handleCancel()
+  const handleSubmit = () => {
+    handleOk()
 
-    setShowIpAddressChangeAlert(true)
+    setShowUpdatedAlert(true)
     setTimeout(() => {
-      setShowIpAddressChangeAlert(false)
+      setShowUpdatedAlert(false)
     }, 5000)
   }
-
-  /**
-   * Useeffect for fetching initial ip address
-   */
-  useEffect(() => {
-    const fetchIp = async () => {
-      const { data } = await axios.get('http://localhost:3000/ip')
-
-      if (data) {
-        setIpAddress(data)
-      }
-    }
-
-    fetchIp()
-  }, [])
 
   const renderTabBar = (props, DefaultTabBar) => (
     <StickyBox offsetTop={60} offsetBottom={0} style={{ zIndex: 1 }}>
       <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
-      {showIpAddressChangeAlert && (
+      {showUpdatedAlert && (
         <Alert
-          message={`Ip Address Changed to ${ipAddress}`}
+          message={`Config Saved Successfully`}
           type="success"
           closable
-          afterClose={() => setShowIpAddressChangeAlert(false)}
+          afterClose={() => setShowUpdatedAlert(false)}
         />
       )}
     </StickyBox>
@@ -104,7 +85,7 @@ const MainView = () => {
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
             }}
           >
-            <Typography.Title>Probe @ {ipAddress}</Typography.Title>
+            <Typography.Title>Probe @ {config.probeIp}</Typography.Title>
             <Button
               style={{ marginLeft: 'auto' }}
               type="text"
@@ -117,12 +98,7 @@ const MainView = () => {
           <Tabs defaultActiveKey="1" items={items} renderTabBar={renderTabBar} />
         </Content>
       </Layout>
-      <SettingModal
-        open={isModalOpen}
-        onCancel={handleCancel}
-        ipAddress={ipAddress}
-        onIpChange={handleIpChange}
-      />
+      <SettingModal open={isModalOpen} onCancel={handleCancel} onSubmit={handleSubmit} />
     </>
   )
 }

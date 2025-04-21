@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { ADDRESS_TYPE, readRegisters } from './modbus.js';
+import CONFIG from './config.cjs';
 
 /**
  * TBD
@@ -15,8 +16,8 @@ export const pollModbus = async (io) => {
     },
     2: {
       [ADDRESS_TYPE.COIL]: 3,
-      [ADDRESS_TYPE.DISCRETE_INPUT]: 20,
-      [ADDRESS_TYPE.HOLDING_REGISTER]: 232,
+      [ADDRESS_TYPE.DISCRETE_INPUT]: CONFIG.legacy ? 19 : 20,
+      [ADDRESS_TYPE.HOLDING_REGISTER]: CONFIG.legacy ? 10 : 232,
       [ADDRESS_TYPE.INPUT_REGISTER]: 47284,
     },
     // 3: {
@@ -32,7 +33,7 @@ export const pollModbus = async (io) => {
       [ADDRESS_TYPE.COIL]: 14,
       [ADDRESS_TYPE.DISCRETE_INPUT]: 15,
       [ADDRESS_TYPE.HOLDING_REGISTER]: 10,
-      [ADDRESS_TYPE.INPUT_REGISTER]: 325,
+      [ADDRESS_TYPE.INPUT_REGISTER]: CONFIG.legacy ? 10 : 325,
     },
   };
 

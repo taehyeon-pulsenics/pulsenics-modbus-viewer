@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import io from 'socket.io-client'
 import { Buffer } from 'buffer'
 import { ModbusContext } from './ModbusContext'
+import axios from 'axios'
 
 // Create a context
 const SocketContext = createContext()
@@ -9,6 +10,10 @@ const SocketContext = createContext()
 // Provider component that manages the socket connection and state
 export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null)
+  const [config, setConfig] = useState({
+    probeIp: '192.168.0.1',
+    legacy: false
+  })
 
   // Use modbus context
   const {
@@ -79,6 +84,22 @@ export function SocketProvider({ children }) {
     setClientMsg
   } = useContext(ModbusContext)
 
+  /**
+   * Helper function to fetch config from server
+   */
+  const fetchConfig = async () => {
+    const { data } = await axios.get('http://localhost:3000/config')
+
+    if (data) {
+      setConfig(data)
+    }
+  }
+
+  useEffect(() => {
+    // fetch config
+    fetchConfig()
+  }, [])
+
   useEffect(() => {
     // Create socket connection once on mount
     const socketInstance = io('http://localhost:3000')
@@ -89,6 +110,7 @@ export function SocketProvider({ children }) {
       console.log('Connected to backend WebSocket server')
     })
 
+    // socket message handler
     socketInstance.on('1_1', (data) => {
       if (data === 'null') {
         return
@@ -150,7 +172,9 @@ export function SocketProvider({ children }) {
       setSampleStarted(!!registers[0])
       setSampleCompleted(!!registers[1])
       setSampleReceived(!!registers[18])
-      setSampleFailed(!!registers[19])
+      if (!config.legacy) {
+        setSampleFailed(!!registers[19])
+      }
 
       setConnectedCmus(Array.from(registers.slice(2, 18), (v) => Boolean(v)))
     })
@@ -168,24 +192,26 @@ export function SocketProvider({ children }) {
       setNTotalFreqs(buffer.readFloatBE(12))
       setNSimulFreqs(buffer.readFloatBE(16))
 
-      const dutIdLen = buffer.readUInt16BE(200)
-      if (dutIdLen > 0) {
-        setDutId(buffer.subarray(202, 264).toString('utf-8').substring(0, dutIdLen))
-      }
+      if (!config.legacy) {
+        const dutIdLen = buffer.readUInt16BE(200)
+        if (dutIdLen > 0) {
+          setDutId(buffer.subarray(202, 264).toString('utf-8').substring(0, dutIdLen))
+        }
 
-      const triggerIdLen = buffer.readUInt16BE(266)
-      if (triggerIdLen > 0) {
-        setTriggerId(buffer.subarray(268, 330).toString('utf-8').substring(0, triggerIdLen))
-      }
+        const triggerIdLen = buffer.readUInt16BE(266)
+        if (triggerIdLen > 0) {
+          setTriggerId(buffer.subarray(268, 330).toString('utf-8').substring(0, triggerIdLen))
+        }
 
-      const experimentIdLen = buffer.readUInt16BE(332)
-      if (experimentIdLen > 0) {
-        setExperimentId(buffer.subarray(334, 396).toString('utf-8').substring(0, experimentIdLen))
-      }
+        const experimentIdLen = buffer.readUInt16BE(332)
+        if (experimentIdLen > 0) {
+          setExperimentId(buffer.subarray(334, 396).toString('utf-8').substring(0, experimentIdLen))
+        }
 
-      const metadataLen = buffer.readUInt16BE(398)
-      if (metadataLen > 0) {
-        setMetadata(buffer.subarray(400, 462).toString('utf-8').substring(0, metadataLen))
+        const metadataLen = buffer.readUInt16BE(398)
+        if (metadataLen > 0) {
+          setMetadata(buffer.subarray(400, 462).toString('utf-8').substring(0, metadataLen))
+        }
       }
     })
 
@@ -266,14 +292,16 @@ export function SocketProvider({ children }) {
       setDutUndervoltageLimit(buffer.readFloatBE(12))
       setVoltageDeviationLimit(buffer.readFloatBE(16))
 
-      const probeSnLen = buffer.readUInt16BE(200)
-      if (probeSnLen > 0) {
-        setProbeSn(buffer.subarray(202, 232).toString('utf-8').substring(0, probeSnLen))
-      }
+      if (!config.legacy) {
+        const probeSnLen = buffer.readUInt16BE(200)
+        if (probeSnLen > 0) {
+          setProbeSn(buffer.subarray(202, 232).toString('utf-8').substring(0, probeSnLen))
+        }
 
-      const clientMsgLen = buffer.readUInt16BE(400)
-      if (clientMsgLen > 0) {
-        setClientMsg(buffer.subarray(402, 648).toString('utf-8').substring(0, clientMsgLen))
+        const clientMsgLen = buffer.readUInt16BE(400)
+        if (clientMsgLen > 0) {
+          setClientMsg(buffer.subarray(402, 648).toString('utf-8').substring(0, clientMsgLen))
+        }
       }
     })
 
@@ -291,10 +319,26 @@ export function SocketProvider({ children }) {
       socketInstance.off('connect')
       socketInstance.disconnect()
     }
-  }, [])
+  }, [config])
+
+  const changeConfig = (config) => {
+    setConfig(config)
+
+    axios.post('http://localhost:3000/config', config)
+  }
 
   // Provide both the socket instance and the latest received data
-  return <SocketContext.Provider value={{ socket }}>{children}</SocketContext.Provider>
+  return (
+    <SocketContext.Provider
+      value={{
+        socket,
+        config,
+        changeConfig
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
+  )
 }
 
 // Custom hook for easy context usage

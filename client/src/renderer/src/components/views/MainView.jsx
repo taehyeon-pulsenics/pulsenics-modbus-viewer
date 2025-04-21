@@ -29,7 +29,7 @@ const MainView = () => {
   } = theme.useToken()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showIpAddressChangeAlert, setShowIpAddressChangeAlert] = useState('false')
+  const [showIpAddressChangeAlert, setShowIpAddressChangeAlert] = useState(false)
   const [ipAddress, setIpAddress] = useState('')
 
   /**

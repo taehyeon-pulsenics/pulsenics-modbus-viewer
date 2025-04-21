@@ -1,22 +1,32 @@
 import ModbusRTU from 'modbus-serial';
+import CONFIG from './config.cjs';
 
 const client = new ModbusRTU();
 
-const IP = '127.0.0.1'; // Replace with your server's IP address.
+const IP = CONFIG.probeIp; // Replace with your server's IP address.
 const PORT = 502;
 
 const MAX_READ_REGISTERS = 125;
 const NUM_REGISTERS_PER_FLOAT_32 = 2;
 const NUM_REGISTERS_PER_FLOAT_64 = 4;
 
-export async function connect() {
+export async function connect(ip = CONFIG.probeIp) {
   try {
     // Connect to Modbus TCP server
-    await client.connectTCP(IP, { port: PORT });
+    await client.connectTCP(ip, { port: PORT });
     // client.setID(UNIT_ID)
     console.log(`Connected to Modbus server at ${IP}:${PORT}`);
   } catch (error) {
     console.error('Connection Error:', error);
+  }
+}
+
+export async function disconnect() {
+  try {
+    client.close();
+    console.log(`Disconnected`);
+  } catch (error) {
+    console.error('Disconnection Error:', error);
   }
 }
 

@@ -12,6 +12,8 @@ import { Settings2 } from 'lucide-react'
 import { blue } from '@ant-design/colors'
 import axios from 'axios'
 
+import './MainView.css'
+
 const { Header, Content } = Layout
 
 const items = [

@@ -4,8 +4,8 @@ import { ChevronDown } from 'lucide-react'
 import { CSSTransition } from 'react-transition-group'
 import './CollapsibleCard.css'
 
-const CollapsibleCard = ({ title, children, ...rest }) => {
-  const [collapsed, setCollapsed] = useState(false)
+const CollapsibleCard = ({ title, initiallyCollapsed = false, children, ...rest }) => {
+  const [collapsed, setCollapsed] = useState(initiallyCollapsed)
 
   const handleToggle = () => {
     setCollapsed((prev) => !prev)

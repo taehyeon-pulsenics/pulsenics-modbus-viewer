@@ -42,7 +42,7 @@ const CmuTables = ({ cmuVoltages }) => {
     const targetVoltages = cmuVoltages.slice(i * 24, i * 24 + 24)
 
     tables.push(
-      <CollapsibleCard size="small" title={`CMU ${i + 1} Voltages`}>
+      <CollapsibleCard size="small" title={`CMU ${i + 1} Voltages`} initiallyCollapsed>
         <NumberTable numbers={targetVoltages} nColumns={8} />
       </CollapsibleCard>
     )

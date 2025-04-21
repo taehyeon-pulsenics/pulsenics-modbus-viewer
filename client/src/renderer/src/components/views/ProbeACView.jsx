@@ -32,19 +32,19 @@ const ProbeACView = () => {
           impPhases={impPhases}
         />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Frequencies">
+      <CollapsibleCard size="small" title="Frequencies" initiallyCollapsed>
         <NumberTable numbers={freqs} />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Current Magnitude">
+      <CollapsibleCard size="small" title="Current Magnitude" initiallyCollapsed>
         <NumberTable numbers={currMag} />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Current Phase">
+      <CollapsibleCard size="small" title="Current Phase" initiallyCollapsed>
         <NumberTable numbers={currPha} />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Probe Voltage Magnitude">
+      <CollapsibleCard size="small" title="Probe Voltage Magnitude" initiallyCollapsed>
         <NumberTable numbers={probeVoltageMag} />
       </CollapsibleCard>
-      <CollapsibleCard size="small" title="Probe Voltage Phase">
+      <CollapsibleCard size="small" title="Probe Voltage Phase" initiallyCollapsed>
         <NumberTable numbers={probeVoltagePha} />
       </CollapsibleCard>
     </Space>

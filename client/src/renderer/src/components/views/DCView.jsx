@@ -29,7 +29,7 @@ const DCView = () => {
         <p>Current: {dcCurrent}A</p>
         <p>Voltage: {dcVoltage}V</p>
 
-        <CmuTables cmuVoltages={cmuVoltages} />
+        {/* <CmuTables cmuVoltages={cmuVoltages} /> */}
       </CollapsibleCard>
     </Space>
   )

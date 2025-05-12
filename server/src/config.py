@@ -1,7 +1,7 @@
 import json, sys, shutil
 from pathlib import Path
 
-BASE_DIR     = Path(__file__).resolve().parent
+BASE_DIR     = Path(__file__).resolve().parent.parent
 example_path = BASE_DIR.parent / 'config.example.json'
 config_path  = BASE_DIR.parent / 'config.json'
 

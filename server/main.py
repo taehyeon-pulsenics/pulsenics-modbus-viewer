@@ -1,15 +1,14 @@
-import asyncio
+
 import socketio
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ws_server import sio_server
-from threading import Thread
 
 from modbus_reader.ModbusReader import ModbusReader
 
 import config
-from custom_types import api_request_types, api_response_types
+from custom_types import api_request_types
 
 app = FastAPI()
 origins = ["*"]

@@ -113,8 +113,6 @@ class ModbusReader():
                         registers = self.__read_registers(self.client.read_input_registers, address=0, count=n_registers, slave=unit_id)
 
                     asyncio.run(self.__broadcast_registers(key=key, registers=registers))
-            
-            time.sleep(1)
     
     def create_poll_thread(self):
         return Thread(target=self.__poll_modbus, daemon=True)

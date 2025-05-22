@@ -1,9 +1,9 @@
 import json, sys, shutil
 from pathlib import Path
 
-BASE_DIR     = Path(__file__).resolve().parent.parent
-example_path = BASE_DIR.parent / 'config.example.json'
-config_path  = BASE_DIR.parent / 'config.json'
+BASE_DIR     = Path("../").resolve()
+example_path = BASE_DIR / 'config.example.json'
+config_path  = BASE_DIR / 'config.json'
 
 if not config_path.exists():
     shutil.copy(example_path, config_path)

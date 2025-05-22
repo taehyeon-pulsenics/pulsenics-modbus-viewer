@@ -1,2 +1,5 @@
 _pycache
 venv
+build
+dist
+*.spec

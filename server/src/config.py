@@ -1,8 +1,18 @@
 import json, sys, shutil
 from pathlib import Path
 
-BASE_DIR     = Path("../").resolve()
+BASE_DIR     = Path("./").resolve()
 example_path = BASE_DIR / 'config.example.json'
+
+failback_count = 3
+while not example_path.exists() and failback_count > 0:
+    BASE_DIR = BASE_DIR.parent
+    example_path = BASE_DIR / 'config.example.json'
+    failback_count -= 1
+
+if not example_path.exists():
+    raise Exception('CANNOT INITIALIZE SERVER; MISSING CONFIG FILE')
+
 config_path  = BASE_DIR / 'config.json'
 
 if not config_path.exists():

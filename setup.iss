@@ -30,7 +30,7 @@ OutputBaseFilename=Pulsenics Modbus Viewer Installer
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-; SetupIconFile=.\public\pulsenics.ico
+SetupIconFile=.\public\logo.ico
 Uninstallable=yes
 
 [Languages]
@@ -44,6 +44,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: ".\client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; server code
 Source: ".\server\dist\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs createallsubdirs
+; public
+Source: ".\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; main code
 Source: ".\run.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -59,8 +61,8 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; Value
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\pulsenics.ico
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\pulsenics.ico; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\logo.ico
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\logo.ico; Tasks: desktopicon
 
 [Run]
 Filename: {app}\run.bat; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall

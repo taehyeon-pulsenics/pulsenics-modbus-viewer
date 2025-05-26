@@ -47,6 +47,8 @@ Source: ".\server\dist\*"; DestDir: "{app}\server"; Flags: ignoreversion recurse
 ; public
 Source: ".\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; main code
+Source: ".\start.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\run_silently.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\run.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; config code

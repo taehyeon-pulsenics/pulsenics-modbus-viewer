@@ -85,6 +85,11 @@ class ModbusReader():
         }
 
         while True:
+            if not self.is_connected():
+                self.__broadcast_connection(False)
+                while not self.connect():
+                    time.sleep(1)
+            self.__broadcast_connection(True)
             for unit_id in n_registers_map:
                 for register_type in n_registers_map[unit_id]:
                     registers = None
@@ -126,6 +131,12 @@ class ModbusReader():
                 await self.sio_server.emit(key, buf)
         except Exception as e:
             print("Problem occured during ModbusReader.__broadcast_registers\n", e)
+
+    async def __broadcast_connection(self, connected: bool):
+        try:
+            await self.sio_server.emit('connection', connected)
+        except Exception as e:
+            print("Problem occured during ModbusReader.__broadcast_registers\n", e)
     
     def __read_registers(self, read_func, address, count, slave):
         try:
@@ -146,5 +157,5 @@ class ModbusReader():
             
             return registers
         except Exception as e:
-            print("Problem occured during ModbusReader.__broadcast_registers\n", e)
+            print("Problem occured during ModbusReader.__read_registers\n", e)
 

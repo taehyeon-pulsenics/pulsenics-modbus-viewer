@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useState, useContext } from 'react'
 import { Layout, Tabs, theme, Button, Affix, Alert, Typography } from 'antd'
 import StickyBox from 'react-sticky-box'
 import { useSocket } from '../../contexts/SocketContext'
@@ -7,11 +7,13 @@ import ProbeStatusView from './ProbeStatusView'
 import ProbeACView from './ProbeACView'
 import ErrorSignalsView from './ErrorSignalsView'
 import MiscView from './MiscView'
+import ModbusConErrorView from './ModbusConErrorView'
 import SettingModal from '../modals/SettingModal'
 import { Settings2 } from 'lucide-react'
 import { blue } from '@ant-design/colors'
 
 import './MainView.css'
+import { ModbusContext } from '../../contexts/ModbusContext'
 
 const { Header, Content } = Layout
 
@@ -29,6 +31,7 @@ const MainView = () => {
     token: { colorBgContainer }
   } = theme.useToken()
 
+  const { modbusConnected } = useContext(ModbusContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
 
@@ -94,8 +97,13 @@ const MainView = () => {
             />
           </Header>
         </Affix>
+
         <Content style={{ background: colorBgContainer }}>
-          <Tabs defaultActiveKey="1" items={items} renderTabBar={renderTabBar} />
+          {modbusConnected ? (
+            <Tabs defaultActiveKey="1" items={items} renderTabBar={renderTabBar} />
+          ) : (
+            <ModbusConErrorView />
+          )}
         </Content>
       </Layout>
       <SettingModal open={isModalOpen} onCancel={handleCancel} onSubmit={handleSubmit} />

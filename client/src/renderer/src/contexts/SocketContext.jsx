@@ -17,6 +17,8 @@ export function SocketProvider({ children }) {
 
   // Use modbus context
   const {
+    modbusConnected,
+    setModbusConnected,
     setUpdateDCSamplingRateCoil,
     setNewDCSamplingRate,
     setDcSampleTime,
@@ -108,6 +110,11 @@ export function SocketProvider({ children }) {
     // Log when connected
     socketInstance.on('connect', () => {
       console.log('Connected to backend WebSocket server')
+    })
+
+    socketInstance.on('connection', (data) => {
+      // only update state when the current state differs from received state
+      setModbusConnected((v) => (v === data ? v : !v))
     })
 
     // socket message handler

@@ -2,6 +2,9 @@ import { useState, createContext } from 'react'
 const ModbusContext = createContext()
 
 const ModbusProvider = ({ children }) => {
+  // modbus connection
+  const [modbusConnected, setModbusConnected] = useState(false)
+
   // dc store
   const [updateDCSamplingRateCoil, setUpdateDCSamplingRateCoil] = useState(false)
   const [newDcSamplingRate, setNewDCSamplingRate] = useState(0)
@@ -72,6 +75,8 @@ const ModbusProvider = ({ children }) => {
   return (
     <ModbusContext.Provider
       value={{
+        modbusConnected,
+        setModbusConnected,
         updateDCSamplingRateCoil,
         setUpdateDCSamplingRateCoil,
         newDcSamplingRate,

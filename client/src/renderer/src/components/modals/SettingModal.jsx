@@ -27,7 +27,7 @@ const SettingModal = ({ open, onCancel, onSubmit }) => {
         <Form.Item name="probeIp" label="IP Address">
           <Input />
         </Form.Item>
-        <Form.Item name="legacy? (V4)" label="Legacy?">
+        <Form.Item name="legacy" label="Legacy V4?">
           <Switch />
         </Form.Item>
 

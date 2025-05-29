@@ -5,6 +5,7 @@ import time
 import asyncio
 from threading import Thread
 import struct
+import traceback
 
 from custom_types.api_request_types import ConfigInput
 from custom_types.enums import RegisterType
@@ -17,14 +18,15 @@ class ModbusReader():
         self.sio_server = sio
     
     def is_connected(self):
-        return self.client != None and self.client.connected
+        return self.client != None and self.client.connected and self.client.is_socket_open()
 
     def connect(self):
         try:
             self.client = ModbusClient(self.ip)
             res = self.client.connect()
-            if res:
-                print(f"Connected to Modbus server @ {self.ip}:502 (legacy: {self.legacy})")
+
+            asyncio.run(self.__broadcast_connection(res))
+
             return res
         except Exception as e:
             print("Problem occured during ModbusReader.connect", e)
@@ -34,7 +36,7 @@ class ModbusReader():
         try:
             if self.is_connected():
                 self.client.close()
-                print(f"Closed Connection to Modbus server @ {self.ip}:502")
+                self.client = None
                 return True
             return False
         except Exception as e:
@@ -43,16 +45,9 @@ class ModbusReader():
     
     def update_config(self, config: ConfigInput):
         try:
-            self.close()
-
             self.ip = config.probeIp
             self.legacy = config.legacy
 
-            if not self.connect():
-                raise ConnectionAbortedError(
-                    f"Failed to reconnect to Modbus server @ {self.ip}"
-                )
-            
             return True
         except Exception as e:
             print("Problem occured during ModbusReader.update_config\n", e)
@@ -61,7 +56,7 @@ class ModbusReader():
     def __check_call(self, response: ModbusPDU):
         if response.isError():
             raise ConnectionAbortedError(
-                f"Lost connection with Pulsenics Probe @ {self.ip}"
+                "Pymodbus returned an error!"
             )
     
     def __poll_modbus(self):
@@ -86,11 +81,6 @@ class ModbusReader():
         }
 
         while True:
-            while not self.is_connected():
-                asyncio.run(self.__broadcast_connection(False))
-                self.connect()
-                time.sleep(1)
-            asyncio.run(self.__broadcast_connection(True))
             for unit_id in n_registers_map:
                 try:
                     for register_type in n_registers_map[unit_id]:
@@ -98,32 +88,12 @@ class ModbusReader():
                         key = f"{unit_id}_{register_type.value}"
                         n_registers = n_registers_map[unit_id][register_type]
 
-                        if register_type is RegisterType.COIL:
-                            try:
-                                registers = self.__read_inputs(self.client.read_coils, address=0, count=n_registers, slave=unit_id)
-                            except Exception as e:
-                                print("Problem occured during ModbusReader.__poll_modbus's read_coil\n", e)
-                                raise e
-                        elif register_type is RegisterType.DISCRETE_INPUT:
-                            try:
-                                registers = self.__read_inputs(self.client.read_discrete_inputs, address=0, count=n_registers, slave=unit_id)
-                            except Exception as e:
-                                print("Problem occured during ModbusReader.__poll_modbus's read_discrete_inputs\n", e)
-                                raise e
-                        elif register_type is RegisterType.HOLDING_REGISTER:
-                            try:
-                                registers = self.__read_registers(self.client.read_holding_registers, address=0, count=n_registers, slave=unit_id)
-                            except Exception as e:
-                                print("Problem occured during ModbusReader.__poll_modbus's read_holding_register\n", e)
-                                raise e
-                        elif register_type is RegisterType.INPUT_REGISTER:
-                            try:
-                                registers = self.__read_registers(self.client.read_input_registers, address=0, count=n_registers, slave=unit_id)
-                            except Exception as e:
-                                print("Problem occured during ModbusReader.__poll_modbus's read_input_registers\n", e)
-                                raise e
+                        registers = self.__read_registers(register_type, address=0, count=n_registers, slave=unit_id)
                         asyncio.run(self.__broadcast_registers(key=key, registers=registers))
-                except Exception:
+                except Exception as e:
+                    print("Error happened during __poll_modbus")
+                    traceback.print_exception(e)
+
                     break
     
     def create_poll_thread(self):
@@ -145,7 +115,30 @@ class ModbusReader():
         except Exception as e:
             print("Problem occured during ModbusReader.__broadcast_connection\n", e)
     
-    def __read_registers(self, read_func, address, count, slave):
+    def __read_registers(self, register_type: RegisterType, address: int, count: int, slave: int):
+        try:
+            while not self.is_connected() and not self.connect():
+                time.sleep(1)
+            
+            if register_type is RegisterType.COIL:
+                registers = self.__read_singlebit_registers(self.client.read_coils, address=address, count=count, slave=slave)
+            elif register_type is RegisterType.DISCRETE_INPUT:
+                registers = self.__read_singlebit_registers(self.client.read_discrete_inputs, address=address, count=count, slave=slave)
+            elif register_type is RegisterType.HOLDING_REGISTER:
+                registers = self.__read_multibit_registers(self.client.read_holding_registers, address=address, count=count, slave=slave)
+            elif register_type is RegisterType.INPUT_REGISTER:
+                registers = self.__read_multibit_registers(self.client.read_input_registers, address=address, count=count, slave=slave)
+            
+            self.close()
+
+            return registers
+        except Exception as e:
+            print("Problem occured during ModbusReader.__read_registers\n", e)
+            print("Closing Modbus connection...")
+            self.close()
+            asyncio.run(self.__broadcast_connection(False))
+    
+    def __read_multibit_registers(self, read_func, address: int, count: int, slave: int):
         try:
             MAX_READ_REGISTERS = 124
 
@@ -161,19 +154,23 @@ class ModbusReader():
 
                 address += n_registers_to_read
                 remaining -= n_registers_to_read
-            
+
             return registers
         except Exception as e:
             print("Problem occured during ModbusReader.__read_registers\n", e)
-            raise e
+            print("Closing Modbus connection...")
+            self.close()
+            asyncio.run(self.__broadcast_connection(False))
     
-    def __read_inputs(self, read_func, address, count, slave):
+    def __read_singlebit_registers(self, read_func, address, count, slave):
         try:
             rr = read_func(address=address, count=count, slave=slave)
             self.__check_call(rr)
 
             return rr.bits[:count]
         except Exception as e:
-            print("Problem occured during ModbusReader.__read_inputs\n", e)
-            raise e
+            print("Problem occured during ModbusReader.__read_registers\n", e)
+            print("Closing Modbus connection...")
+            self.close()
+            asyncio.run(self.__broadcast_connection(False))
 

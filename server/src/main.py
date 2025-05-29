@@ -22,7 +22,6 @@ app.add_middleware(
 sio_app = socketio.ASGIApp(socketio_server=sio_server, other_asgi_app=app)
 
 modbus_reader = ModbusReader(config.probe_ip, config.legacy, sio=sio_server)
-modbus_reader.connect()
 
 modbus_reader.create_poll_thread().start()
 

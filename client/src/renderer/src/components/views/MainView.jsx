@@ -14,10 +14,12 @@ import { blue } from '@ant-design/colors'
 
 import './MainView.css'
 import { ModbusContext } from '../../contexts/ModbusContext'
+import FocusedView from './FocusedView'
 
 const { Header, Content } = Layout
 
 const items = [
+  { key: '0', label: 'Focused', children: <FocusedView /> },
   { key: '1', label: 'Probe Status', children: <ProbeStatusView /> },
   { key: '2', label: 'DC Data', children: <DCDataView /> },
   { key: '3', label: 'AC Data', children: <ACDataView /> },
@@ -100,7 +102,7 @@ const MainView = () => {
 
         <Content style={{ background: colorBgContainer }}>
           {modbusConnected ? (
-            <Tabs defaultActiveKey="1" items={items} renderTabBar={renderTabBar} />
+            <Tabs defaultActiveKey="0" items={items} renderTabBar={renderTabBar} />
           ) : (
             <ModbusConErrorView />
           )}

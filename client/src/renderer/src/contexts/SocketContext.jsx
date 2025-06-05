@@ -149,12 +149,12 @@ export function SocketProvider({ children }) {
       setDcVoltage(buffer.readFloatBE(8))
       setDcCurrent(buffer.readFloatBE(12))
 
-      // const cmuVoltages = []
-      // for (let i = 0; i < 96 * 4; i++) {
-      //   cmuVoltages.push(buffer.readFloatBE(16 + i * 4))
-      // }
+      const cmuVoltages = []
+      for (let i = 0; i < 96 * 4; i++) {
+        cmuVoltages.push(buffer.readFloatBE(16 + i * 4))
+      }
 
-      // setCmuVoltages(cmuVoltages)
+      setCmuVoltages(cmuVoltages)
     })
 
     socketInstance.on('2_1', (data) => {

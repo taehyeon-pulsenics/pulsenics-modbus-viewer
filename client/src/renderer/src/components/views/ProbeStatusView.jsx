@@ -4,6 +4,7 @@ import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
 import { Space, Table } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
+import CMUTable from '../tables/CMUTable'
 
 const ProbeStatusView = () => {
   const {
@@ -29,39 +30,18 @@ const ProbeStatusView = () => {
   } = useContext(ModbusContext)
   const { config } = useSocket()
 
-  const connectedCMUColumns = connectedCmus.map((_, index) => ({
-    title: `CMU ${index + 1}`, // Column header
-    dataIndex: `col${index + 1}`, // Key to match data source
-    key: `col${index + 1}`,
-    render: (value) =>
-      !!value ? (
-        <Cloud style={{ color: 'green', fontSize: '16px' }} />
-      ) : (
-        <CloudOff style={{ color: 'red', fontSize: '16px' }} />
-      ) // Render icon based on boolean
-  }))
-
-  // Create a single row data source where each key corresponds to a column
-  const connectedCMUDataSource = [
-    connectedCmus.reduce(
-      (acc, cur, index) => {
-        acc[`col${index + 1}`] = cur
-        return acc
-      },
-      { key: 'row1' }
-    )
-  ]
-
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CollapsibleCard size="small" title="Connected CMUs">
-        <Table
-          columns={connectedCMUColumns}
-          dataSource={connectedCMUDataSource}
-          pagination={false} // No pagination needed for a single row
-          bordered // Optional: adds borders to the table
-        />
-      </CollapsibleCard>
+      <CMUTable
+        connectedCmus={connectedCmus}
+        render={(value) =>
+          !!value.connected ? (
+            <Cloud style={{ color: 'green', fontSize: '16px' }} />
+          ) : (
+            <CloudOff style={{ color: 'red', fontSize: '16px' }} />
+          )
+        }
+      />
       <CollapsibleCard size="small" title="DC Coil">
         <p>
           Update DC Sample Rate:{' '}

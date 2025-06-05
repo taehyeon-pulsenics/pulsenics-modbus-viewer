@@ -64,13 +64,13 @@ class ModbusReader():
             1: {
                 RegisterType.COIL: 1,
                 RegisterType.HOLDING_REGISTER: 2,
-                RegisterType.INPUT_REGISTER: 8
+                RegisterType.INPUT_REGISTER: 776
             },
             2: {
                 RegisterType.COIL: 3,
                 RegisterType.DISCRETE_INPUT: 19 if self.legacy else 20,
                 RegisterType.HOLDING_REGISTER: 10 if self.legacy else 232,
-                RegisterType.INPUT_REGISTER: 1204
+                RegisterType.INPUT_REGISTER: 47284
             },
             6: {
                 RegisterType.COIL: 14,

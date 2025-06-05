@@ -1,11 +1,29 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
-import { Space } from 'antd'
-import NumberTable from '../tables/NumberTable'
+import { Button, Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
+import { CloudOff, Search } from 'lucide-react'
+import CMUTable from '../tables/CMUTable'
+import CMUDCDataModal from '../modals/CMUDCDataModal'
 
 const DCDataView = () => {
-  const { dcVoltage, dcCurrent, cmuVoltages } = useContext(ModbusContext)
+  const { dcVoltage, dcCurrent, cmuVoltages, connectedCmus } = useContext(ModbusContext)
+  const [selectedCMU, setSelectedCMU] = useState(null)
+
+  /**
+   * Modal Control Functions
+   */
+  const showModal = (cmuNumber) => {
+    setSelectedCMU(cmuNumber)
+  }
+  const handleCancel = () => {
+    setSelectedCMU(null)
+  }
+  const isModalOpen = selectedCMU !== null
+  const voltagesForModal =
+    selectedCMU != null
+      ? cmuVoltages.slice((selectedCMU - 1) * 24, (selectedCMU - 1) * 24 + 24)
+      : []
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
@@ -20,27 +38,30 @@ const DCDataView = () => {
       >
         <p>Current: {dcCurrent}A</p>
         <p>Voltage: {dcVoltage}V</p>
-
-        {/* <CmuTables cmuVoltages={cmuVoltages} /> */}
       </CollapsibleCard>
+      <CMUTable
+        connectedCmus={connectedCmus}
+        render={(value) =>
+          !!value.connected ? (
+            <Button
+              type="primary"
+              icon={<Search style={{ fontSize: '16px' }} />}
+              onClick={() => showModal(value.cmuNumber)}
+            />
+          ) : (
+            <CloudOff style={{ color: 'red', fontSize: '16px' }} />
+          )
+        }
+        tableTitle="View CMU Voltages"
+      />
+      <CMUDCDataModal
+        title={`CMU ${selectedCMU} Voltage Reading`}
+        voltages={voltagesForModal}
+        open={isModalOpen}
+        onCancel={handleCancel}
+      />
     </Space>
   )
-}
-
-const CmuTables = ({ cmuVoltages }) => {
-  const tables = []
-  for (let i = 0; i < 16; i++) {
-    // each cmu has 24 channels
-    const targetVoltages = cmuVoltages.slice(i * 24, i * 24 + 24)
-
-    tables.push(
-      <CollapsibleCard size="small" title={`CMU ${i + 1} Voltages`} initiallyCollapsed>
-        <NumberTable numbers={targetVoltages} nColumns={8} />
-      </CollapsibleCard>
-    )
-  }
-
-  return tables
 }
 
 export default DCDataView

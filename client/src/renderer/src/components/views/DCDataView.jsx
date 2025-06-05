@@ -1,22 +1,14 @@
 import { useContext } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
-import { CircleCheck, CircleX } from 'lucide-react'
 import { Space } from 'antd'
 import NumberTable from '../tables/NumberTable'
 import CollapsibleCard from '../cards/CollapsibleCard'
 
-const DCView = () => {
-  const { updateDCSamplingRateCoil, newDcSamplingRate, dcVoltage, dcCurrent, cmuVoltages } =
-    useContext(ModbusContext)
+const DCDataView = () => {
+  const { dcVoltage, dcCurrent, cmuVoltages } = useContext(ModbusContext)
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CollapsibleCard size="small" title="Update DC Sampling Rate?">
-        {updateDCSamplingRateCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
-      </CollapsibleCard>
-      <CollapsibleCard size="small" title="DC Sampling Rate">
-        {newDcSamplingRate} /s
-      </CollapsibleCard>
       <CollapsibleCard
         size="small"
         title="DC Sampling Reading"
@@ -51,4 +43,4 @@ const CmuTables = ({ cmuVoltages }) => {
   return tables
 }
 
-export default DCView
+export default DCDataView

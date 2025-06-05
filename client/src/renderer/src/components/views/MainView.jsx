@@ -2,9 +2,9 @@ import { useState, useContext } from 'react'
 import { Layout, Tabs, theme, Button, Affix, Alert, Typography } from 'antd'
 import StickyBox from 'react-sticky-box'
 import { useSocket } from '../../contexts/SocketContext'
-import DCView from './DCView'
+import DCDataView from './DCDataView'
 import ProbeStatusView from './ProbeStatusView'
-import ProbeACView from './ProbeACView'
+import ACDataView from './ACDataView'
 import ErrorSignalsView from './ErrorSignalsView'
 import MiscView from './MiscView'
 import ModbusConErrorView from './ModbusConErrorView'
@@ -18,9 +18,9 @@ import { ModbusContext } from '../../contexts/ModbusContext'
 const { Header, Content } = Layout
 
 const items = [
-  { key: '1', label: 'DC', children: <DCView /> },
-  { key: '2', label: 'Probe Status', children: <ProbeStatusView /> },
-  { key: '3', label: 'Probe AC', children: <ProbeACView /> },
+  { key: '1', label: 'Probe Status', children: <ProbeStatusView /> },
+  { key: '2', label: 'DC', children: <DCDataView /> },
+  { key: '3', label: 'AC Data', children: <ACDataView /> },
   { key: '4', label: 'Error Signals', children: <ErrorSignalsView /> },
   { key: '5', label: 'Misc', children: <MiscView /> }
 ]

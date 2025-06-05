@@ -7,6 +7,8 @@ import { useSocket } from '../../contexts/SocketContext'
 
 const ProbeStatusView = () => {
   const {
+    updateDCSamplingRateCoil,
+    newDcSamplingRate,
     sampleModeCoil,
     startEISCoil,
     interruptCoil,
@@ -59,6 +61,15 @@ const ProbeStatusView = () => {
           pagination={false} // No pagination needed for a single row
           bordered // Optional: adds borders to the table
         />
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="DC Coil">
+        <p>
+          Update DC Sample Rate:{' '}
+          {updateDCSamplingRateCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
+        </p>
+      </CollapsibleCard>
+      <CollapsibleCard size="small" title="DC Sampling Rate">
+        {newDcSamplingRate} /s
       </CollapsibleCard>
       <CollapsibleCard size="small" title="AC Coil">
         <p>Sample Mode: {sampleModeCoil ? 'Galvanostatic' : 'Potentiostatic'}</p>

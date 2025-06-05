@@ -3,6 +3,7 @@ import { ModbusContext } from '../../contexts/ModbusContext'
 import { List, Space, Typography } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { CircleCheck, CircleX } from 'lucide-react'
+import { useSocket } from '../../contexts/SocketContext'
 
 const ErrorSignalsView = () => {
   const {
@@ -23,6 +24,7 @@ const ErrorSignalsView = () => {
     lowerPowerModePreventingSample,
     sampleFailed
   } = useContext(ModbusContext)
+  const { config } = useSocket()
 
   const signals = [
     {
@@ -116,7 +118,12 @@ const ErrorSignalsView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <p>Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}</p>
+      {!config.legacy && (
+        <p>
+          Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
+        </p>
+      )}
+
       <CollapsibleCard size="small" title="Error Signals">
         <List
           bordered

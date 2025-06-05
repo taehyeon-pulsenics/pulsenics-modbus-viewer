@@ -19,7 +19,7 @@ const { Header, Content } = Layout
 
 const items = [
   { key: '1', label: 'Probe Status', children: <ProbeStatusView /> },
-  { key: '2', label: 'DC', children: <DCDataView /> },
+  { key: '2', label: 'DC Data', children: <DCDataView /> },
   { key: '3', label: 'AC Data', children: <ACDataView /> },
   { key: '4', label: 'Error Signals', children: <ErrorSignalsView /> },
   { key: '5', label: 'Misc', children: <MiscView /> }

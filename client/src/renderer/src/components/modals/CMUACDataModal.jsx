@@ -1,6 +1,6 @@
 import { Checkbox, Col, Modal, Row } from 'antd'
 import ACPlotView from '../views/subviews/ACPlotView'
-import { useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { debounce } from 'lodash'
 
 /**
@@ -39,9 +39,7 @@ const CMUACDataModal = ({
             .fill(null)
             .map((_, index) => (
               <Col className="gutter-row" span={4}>
-                <Checkbox
-                  onChange={(e) => handleCheckboxChange(index, e.target.checked)}
-                >
+                <Checkbox onChange={(e) => handleCheckboxChange(index, e.target.checked)}>
                   Channel: {index + 1}
                 </Checkbox>
               </Col>

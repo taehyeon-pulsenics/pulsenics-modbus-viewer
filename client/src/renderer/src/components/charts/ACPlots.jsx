@@ -1,4 +1,5 @@
 import { WidthProvider, Responsive } from 'react-grid-layout'
+import React, { memo } from 'react'
 import BodePlot from './BodePlot'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
@@ -112,4 +113,4 @@ const ACPlots = ({
   )
 }
 
-export default ACPlots
+export default memo(ACPlots)

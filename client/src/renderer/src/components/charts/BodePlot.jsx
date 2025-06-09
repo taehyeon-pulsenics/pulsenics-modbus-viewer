@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, memo } from 'react'
 import * as d3 from 'd3'
 
 /**
@@ -108,7 +108,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
       .attr('y', -margin.left + 15)
       .attr('text-anchor', 'middle')
       .text(yAxisLabel)
-  }, [frequencies, measurements, yAxisLabel])
+  }, [frequencies, measurements, yAxisLabel, chartTitle, chartId])
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -118,4 +118,4 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
   )
 }
 
-export default BodePlot
+export default memo(BodePlot)

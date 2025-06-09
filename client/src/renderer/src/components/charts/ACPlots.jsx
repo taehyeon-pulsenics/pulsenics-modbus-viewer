@@ -6,23 +6,36 @@ import 'react-resizable/css/styles.css'
 // Wrap Responsive grid with WidthProvider to have width automatically computed.
 const ReactGridLayout = WidthProvider(Responsive)
 
-const ACPlots = ({ frequencies, currMags, currPhases, volMags, volPhases, impMags, impPhases }) => {
+/**
+ *
+ * @param {{ frequencies: number[], currMags: number[], currPhases: number[], volMagsList: number[][], volPhasesList: number[][], impMagsList: number[][], impPhasesList: number[][] }} props
+ * @returns {import('react').JSX.Element}
+ */
+const ACPlots = ({
+  frequencies,
+  currMags,
+  currPhases,
+  volMagsList,
+  volPhasesList,
+  impMagsList,
+  impPhasesList
+}) => {
   const lgLayout = [
     { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
     { i: 'currPhases', x: 0, y: 1, w: 1, h: 1 },
-    { i: 'volMags', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'volPhases', x: 1, y: 1, w: 1, h: 1 },
-    { i: 'impMags', x: 2, y: 0, w: 1, h: 1 },
-    { i: 'impPhases', x: 2, y: 1, w: 1, h: 1 }
+    { i: 'volMagsList', x: 1, y: 0, w: 1, h: 1 },
+    { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
+    { i: 'impMagsList', x: 2, y: 0, w: 1, h: 1 },
+    { i: 'impPhasesList,', x: 2, y: 1, w: 1, h: 1 }
   ]
 
   const smLayout = [
     { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
     { i: 'currPhases', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'volMags', x: 0, y: 1, w: 1, h: 1 },
-    { i: 'volPhases', x: 1, y: 1, w: 1, h: 1 },
-    { i: 'impMags', x: 0, y: 2, w: 1, h: 1 },
-    { i: 'impPhases', x: 1, y: 2, w: 1, h: 1 }
+    { i: 'volMagsList', x: 0, y: 1, w: 1, h: 1 },
+    { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
+    { i: 'impMagsList', x: 0, y: 2, w: 1, h: 1 },
+    { i: 'impPhasesList,', x: 1, y: 2, w: 1, h: 1 }
   ]
 
   const gridStyle = {
@@ -43,7 +56,7 @@ const ACPlots = ({ frequencies, currMags, currPhases, volMags, volPhases, impMag
         <div key="currMags">
           <BodePlot
             frequencies={frequencies}
-            measurements={currMags}
+            measurements={[currMags]}
             chartId="currMags"
             yAxisLabel="Current Magnitude (A)"
             chartTitle="Current Magnitude"
@@ -52,44 +65,44 @@ const ACPlots = ({ frequencies, currMags, currPhases, volMags, volPhases, impMag
         <div key="currPhases">
           <BodePlot
             frequencies={frequencies}
-            measurements={currPhases}
+            measurements={[currPhases]}
             chartId="currPhases"
             yAxisLabel="Current Phase (degree)"
             chartTitle="Current Phase"
           />
         </div>
-        <div key="volMags">
+        <div key="volMagsList">
           <BodePlot
             frequencies={frequencies}
-            measurements={volMags}
-            chartId="volMags"
+            measurements={volMagsList}
+            chartId="volMagsList"
             yAxisLabel="Voltage Magnitude (V)"
             chartTitle="Voltage Magnitude"
           />
         </div>
-        <div key="volPhases">
+        <div key="volPhasesList">
           <BodePlot
             frequencies={frequencies}
-            measurements={volPhases}
-            chartId="volPhases"
+            measurements={volPhasesList}
+            chartId="volPhasesList"
             yAxisLabel="Voltage Phase (degree)"
             chartTitle="Voltage Phase"
           />
         </div>
-        <div key="impMags">
+        <div key="impMagsList">
           <BodePlot
             frequencies={frequencies}
-            measurements={impMags}
-            chartId="impMags"
+            measurements={impMagsList}
+            chartId="impMagsList"
             yAxisLabel="Impedance Magnitude (Ohms)"
             chartTitle="Impedance Magnitude"
           />
         </div>
-        <div key="impPhases">
+        <div key="impPhasesList,">
           <BodePlot
             frequencies={frequencies}
-            measurements={impPhases}
-            chartId="impPhases"
+            measurements={impPhasesList}
+            chartId="impPhasesList,"
             yAxisLabel="Impedance Phase (degree)"
             chartTitle="Impedance Phase"
           />

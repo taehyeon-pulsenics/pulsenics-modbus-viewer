@@ -40,9 +40,13 @@ const ModbusProvider = ({ children }) => {
 
   // ac store 1
   const [cmu1VoltageMag, setCmu1VoltageMag] = useState([])
+  const [cmu1VoltagePha, setCmu1VoltagePha] = useState([])
   const [cmu2VoltageMag, setCmu2VoltageMag] = useState([])
+  const [cmu2VoltagePha, setCmu2VoltagePha] = useState([])
   const [cmu3VoltageMag, setCmu3VoltageMag] = useState([])
+  const [cmu3VoltagePha, setCmu3VoltagePha] = useState([])
   const [cmu4VoltageMag, setCmu4VoltageMag] = useState([])
+  const [cmu4VoltagePha, setCmu4VoltagePha] = useState([])
 
   // error signals
   const [criticalFault, setCriticalFault] = useState(false)
@@ -137,12 +141,20 @@ const ModbusProvider = ({ children }) => {
         setProbeVoltagePha,
         cmu1VoltageMag,
         setCmu1VoltageMag,
+        cmu1VoltagePha,
+        setCmu1VoltagePha,
         cmu2VoltageMag,
         setCmu2VoltageMag,
+        cmu2VoltagePha,
+        setCmu2VoltagePha,
         cmu3VoltageMag,
         setCmu3VoltageMag,
+        cmu3VoltagePha,
+        setCmu3VoltagePha,
         cmu4VoltageMag,
         setCmu4VoltageMag,
+        cmu4VoltagePha,
+        setCmu4VoltagePha,
         criticalFault,
         setCriticalFault,
         generalFault,

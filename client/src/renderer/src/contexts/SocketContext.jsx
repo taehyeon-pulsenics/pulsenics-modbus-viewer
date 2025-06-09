@@ -42,26 +42,20 @@ export function SocketProvider({ children }) {
     setConnectedCmus,
     setSampleReceived,
     setSampleFailed,
-    acSampleTime,
     setAcSampleTime,
-    freqs,
     setFreqs,
-    currMag,
     setCurrMag,
-    currPha,
     setcurrPha,
-    probeVoltageMag,
     setProbeVoltageMag,
-    probeVoltagePha,
     setProbeVoltagePha,
-    cmu1VoltageMag,
     setCmu1VoltageMag,
-    cmu2VoltageMag,
+    setCmu1VoltagePha,
     setCmu2VoltageMag,
-    cmu3VoltageMag,
+    setCmu2VoltagePha,
     setCmu3VoltageMag,
-    cmu4VoltageMag,
+    setCmu3VoltagePha,
     setCmu4VoltageMag,
+    setCmu4VoltagePha,
     setCriticalFault,
     setGeneralFault,
     setDutOvervoltageFault,
@@ -260,6 +254,75 @@ export function SocketProvider({ children }) {
         probeVoltagePhases.push(buffer.readFloatBE(8 + 480 * 4 + i * 4))
       }
       setProbeVoltagePha(probeVoltagePhases)
+
+      // set cmu 1-4 data
+      const cmu1VoltageMags = []
+      const cmu1VoltagePhases = []
+      for (let i = 0; i < 24; i++) {
+        const channelVoltageMags = []
+        const channelVoltagePhases = []
+
+        for (let j = 0; j < 120; j++) {
+          channelVoltageMags.push(buffer.readFloatBE(2408 + 480 * i * 2 + j * 4))
+          channelVoltagePhases.push(buffer.readFloatBE(2888 + 480 * i * 2 + j * 4))
+        }
+
+        cmu1VoltageMags.push(channelVoltageMags)
+        cmu1VoltagePhases.push(channelVoltagePhases)
+      }
+      setCmu1VoltageMag(cmu1VoltageMags)
+      setCmu1VoltagePha(cmu1VoltagePhases)
+
+      const cmu2VoltageMags = []
+      const cmu2VoltagePhases = []
+      for (let i = 0; i < 24; i++) {
+        const channelVoltageMags = []
+        const channelVoltagePhases = []
+
+        for (let j = 0; j < 120; j++) {
+          channelVoltageMags.push(buffer.readFloatBE(25448 + 480 * i * 2 + j * 4))
+          channelVoltagePhases.push(buffer.readFloatBE(25928 + 480 * i * 2 + j * 4))
+        }
+
+        cmu2VoltageMags.push(channelVoltageMags)
+        cmu2VoltagePhases.push(channelVoltagePhases)
+      }
+      setCmu2VoltageMag(cmu2VoltageMags)
+      setCmu2VoltagePha(cmu2VoltagePhases)
+
+      const cmu3VoltageMags = []
+      const cmu3VoltagePhases = []
+      for (let i = 0; i < 24; i++) {
+        const channelVoltageMags = []
+        const channelVoltagePhases = []
+
+        for (let j = 0; j < 120; j++) {
+          channelVoltageMags.push(buffer.readFloatBE(48488 + 480 * i * 2 + j * 4))
+          channelVoltagePhases.push(buffer.readFloatBE(48968 + 480 * i * 2 + j * 4))
+        }
+
+        cmu3VoltageMags.push(channelVoltageMags)
+        cmu3VoltagePhases.push(channelVoltagePhases)
+      }
+      setCmu3VoltageMag(cmu3VoltageMags)
+      setCmu3VoltagePha(cmu3VoltagePhases)
+
+      const cmu4VoltageMags = []
+      const cmu4VoltagePhases = []
+      for (let i = 0; i < 24; i++) {
+        const channelVoltageMags = []
+        const channelVoltagePhases = []
+
+        for (let j = 0; j < 120; j++) {
+          channelVoltageMags.push(buffer.readFloatBE(71528 + 480 * i * 2 + j * 4))
+          channelVoltagePhases.push(buffer.readFloatBE(72008 + 480 * i * 2 + j * 4))
+        }
+
+        cmu4VoltageMags.push(channelVoltageMags)
+        cmu4VoltagePhases.push(channelVoltagePhases)
+      }
+      setCmu4VoltageMag(cmu4VoltageMags)
+      setCmu4VoltagePha(cmu4VoltagePhases)
     })
 
     socketInstance.on('6_2', (data) => {

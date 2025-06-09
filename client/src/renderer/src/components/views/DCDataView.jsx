@@ -49,7 +49,11 @@ const DCDataView = () => {
               onClick={() => showModal(value.cmuNumber)}
             />
           ) : (
-            <CloudOff style={{ color: 'red', fontSize: '16px' }} />
+            <Button
+              type="dashed"
+              icon={<CloudOff style={{ color: 'red', fontSize: '16px' }} />}
+              onClick={() => showModal(value.cmuNumber)}
+            />
           )
         }
         tableTitle="View CMU Voltages"

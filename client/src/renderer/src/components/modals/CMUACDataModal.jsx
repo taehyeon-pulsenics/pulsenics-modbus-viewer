@@ -1,4 +1,4 @@
-import { Checkbox, Col, Modal, Row, Switch } from 'antd'
+import { Checkbox, Col, Flex, Modal, Row, Switch } from 'antd'
 import ACPlotView from '../views/subviews/ACPlotView'
 import React, { useReducer, useState } from 'react'
 import CollapsibleCard from '../cards/CollapsibleCard'
@@ -19,7 +19,7 @@ const CMUACDataModal = ({
   voltagePhases,
   title = ''
 }) => {
-  const [graphView, setGraphView] = useState(true)
+  const [graphView, setGraphView] = useState(false)
 
   const [selectedChannels, dispatch] = useReducer((state, action) => {
     const newSelectedChannels = [...state]
@@ -33,8 +33,11 @@ const CMUACDataModal = ({
 
   return (
     <Modal width="80%" title={title} open={open} onCancel={onCancel} footer={null}>
-      Graph View?
-      <Switch value={graphView} onChange={(e) => setGraphView(e)} />
+      <Flex gap={10}>
+        Graph View?
+        <Switch value={graphView} onChange={(e) => setGraphView(e)} />
+      </Flex>
+
       {graphView ? (
         <>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>

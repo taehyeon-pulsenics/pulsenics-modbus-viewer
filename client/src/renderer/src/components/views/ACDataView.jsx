@@ -110,16 +110,18 @@ const ACDataView = () => {
       <CollapsibleCard size="small" title="Probe Voltage Phase" initiallyCollapsed>
         <NumberTable numbers={probeVoltagePha} />
       </CollapsibleCard>
-      <CMUACDataModal
-        title={`CMU ${selectedCMU} Voltage Reading`}
-        frequencies={freqs}
-        currentMags={currMag}
-        currentPhases={currPha}
-        voltageMags={getCorrectVoltageMag(selectedCMU)}
-        voltagePhases={getCorrectVoltagePha(selectedCMU)}
-        open={isModalOpen}
-        onCancel={handleCancel}
-      />
+      {freqs && (
+        <CMUACDataModal
+          title={`CMU ${selectedCMU} Voltage Reading`}
+          frequencies={freqs}
+          currentMags={currMag}
+          currentPhases={currPha}
+          voltageMags={getCorrectVoltageMag(selectedCMU)}
+          voltagePhases={getCorrectVoltagePha(selectedCMU)}
+          open={isModalOpen}
+          onCancel={handleCancel}
+        />
+      )}
     </Space>
   )
 }

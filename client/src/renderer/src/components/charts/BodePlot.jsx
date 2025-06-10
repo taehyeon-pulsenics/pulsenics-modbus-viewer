@@ -39,7 +39,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
     const xScale = d3.scaleLog().domain([safeMinF, maxF]).range([0, width])
 
     // y‐scale (linear) over all sets
-    const allYs = measurements.flat()
+    const allYs = measurements.flat().filter((y) => !isNaN(y))
     const [minY, maxY] = d3.extent(allYs)
     const yScale = d3.scaleLinear().domain([minY, maxY]).nice().range([height, 0])
 
@@ -54,8 +54,8 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
     // line generator
     const lineGen = d3
       .line()
-      .x((_, i) => xScale(frequencies[i]))
-      .y((d) => yScale(d))
+      .x((_, i) => (isNaN(frequencies[i]) ? null : xScale(frequencies[i])))
+      .y((d) => (isNaN(d) ? null : yScale(d)))
       .curve(d3.curveMonotoneX)
 
     // draw each measurement set

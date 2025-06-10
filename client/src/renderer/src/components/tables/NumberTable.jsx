@@ -4,7 +4,7 @@ const NumberTable = ({ numbers, nColumns = 8, showHeader = false, columnPrefix =
   // Split numbers into rows with nColumns numbers per row.
   const rows = []
   for (let i = 0; i < numbers.length; i += nColumns) {
-    rows.push(numbers.slice(i, i + nColumns))
+    rows.push(numbers.slice(i, i + nColumns).map(num => typeof num === 'number' ? parseFloat(num.toFixed(6)) : num))
   }
 
   // Prepare the data source for the table.

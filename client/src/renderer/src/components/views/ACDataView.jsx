@@ -3,10 +3,10 @@ import { ModbusContext } from '../../contexts/ModbusContext'
 import { Button, Space } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
 import CMUACDataModal from '../modals/CMUACDataModal'
-import CMUTable from '../tables/CMUTable'
 import { CloudOff, Search } from 'lucide-react'
 import NumberTable from '../tables/NumberTable'
 import CollapsibleCard from '../cards/CollapsibleCard'
+import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 
 const ACDataView = () => {
   const {
@@ -69,9 +69,8 @@ const ACDataView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CMUTable
-        tableTitle="View CMU Data"
-        connectedCmus={connectedCmus}
+      <CMUConnectionGridView
+        title="View CMU Data"
         render={(value) =>
           !!value.connected ? (
             <Button

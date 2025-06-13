@@ -4,7 +4,7 @@ import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
 import { Space, Table } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
-import CMUTable from '../tables/CMUTable'
+import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 
 const ProbeStatusView = () => {
   const {
@@ -32,8 +32,7 @@ const ProbeStatusView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CMUTable
-        connectedCmus={connectedCmus}
+      <CMUConnectionGridView
         render={(value) =>
           !!value.connected ? (
             <Cloud style={{ color: 'green', fontSize: '16px' }} />

@@ -5,6 +5,7 @@ import CollapsibleCard from '../cards/CollapsibleCard'
 import { CloudOff, Search } from 'lucide-react'
 import CMUTable from '../tables/CMUTable'
 import CMUDCDataModal from '../modals/CMUDCDataModal'
+import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 
 const DCDataView = () => {
   const { dcVoltage, dcCurrent, cmuVoltages, connectedCmus } = useContext(ModbusContext)
@@ -39,8 +40,7 @@ const DCDataView = () => {
         <p>Current: {dcCurrent}A</p>
         <p>Voltage: {dcVoltage}V</p>
       </CollapsibleCard>
-      <CMUTable
-        connectedCmus={connectedCmus}
+      <CMUConnectionGridView
         render={(value) =>
           !!value.connected ? (
             <Button
@@ -56,7 +56,7 @@ const DCDataView = () => {
             />
           )
         }
-        tableTitle="View CMU Voltages"
+        title="View CMU Voltages"
       />
       <CMUDCDataModal
         title={`CMU ${selectedCMU} Voltage Reading`}

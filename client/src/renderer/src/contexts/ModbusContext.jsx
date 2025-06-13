@@ -28,7 +28,7 @@ const ModbusProvider = ({ children }) => {
   const [metadata, setMetadata] = useState('')
   const [sampleStarted, setSampleStarted] = useState(false)
   const [sampleCompleted, setSampleCompleted] = useState(false)
-  const [connectedCmus, setConnectedCmus] = useState([])
+  const [connectedCmus, setConnectedCmus] = useState(Array(16).fill(false))
   const [sampleReceived, setSampleReceived] = useState(false)
   const [sampleFailed, setSampleFailed] = useState(false)
   const [acSampleTime, setAcSampleTime] = useState(0)

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { Button, Space } from 'antd'
-import ACPlotView from './subviews/ACPlotView'
+import ACPlotView from '../subviews/ACPlotView'
 import CMUACDataModal from '../modals/CMUACDataModal'
 import CMUTable from '../tables/CMUTable'
 import { CloudOff, Search } from 'lucide-react'

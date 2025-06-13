@@ -1,6 +1,6 @@
 import { Space } from 'antd'
-import CollapsibleCard from '../../cards/CollapsibleCard'
-import ACPlots from '../../charts/ACPlots'
+import CollapsibleCard from '../cards/CollapsibleCard'
+import ACPlots from '../charts/ACPlots'
 
 /**
  *

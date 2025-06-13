@@ -1,5 +1,5 @@
 import { Checkbox, Col, Flex, Modal, Row, Switch } from 'antd'
-import ACPlotView from '../views/subviews/ACPlotView'
+import ACPlotView from '../subviews/ACPlotView'
 import React, { useReducer, useState } from 'react'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import NumberTable from '../tables/NumberTable'

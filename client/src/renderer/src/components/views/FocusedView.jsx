@@ -21,10 +21,10 @@ const FocusedView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      {!config.legacy && <Typography.Title keyboard>{probeSn}</Typography.Title>}
       <Row gutter={16}>
         <Col span={12}>
           <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+            {!config.legacy && <Typography.Title keyboard>{probeSn}</Typography.Title>}
             {!config.legacy && (
               <CollapsibleCard size="small" title="Latest Client Message">
                 {clientMsg}
@@ -51,15 +51,6 @@ const FocusedView = () => {
                 </p>
               )}
             </CollapsibleCard>
-            <CMUConnectionGridView
-              render={(value) =>
-                !!value.connected ? (
-                  <Cloud style={{ color: 'green', fontSize: '16px' }} />
-                ) : (
-                  <CloudOff style={{ color: 'red', fontSize: '16px' }} />
-                )
-              }
-            />
           </Space>
         </Col>
         <Col span={12}>

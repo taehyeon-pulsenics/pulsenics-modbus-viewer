@@ -25,24 +25,24 @@ const CMUConnectionGridView = ({ title = 'CMU Connections', render }) => {
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
                   <Row gutter={[16, 16]} wrap justify="start" align="top">
                     <Col flex="none">
-                      <Card size="small" title="CMU 1">
+                      <Card size="small" title={`CMU ${index * 4 + 1}`}>
                         {render && render(connectedCmuObjs[index * 4 + 0])}
                       </Card>
                     </Col>
                     <Col flex="none">
-                      <Card size="small" title="CMU 2">
+                      <Card size="small" title={`CMU ${index * 4 + 2}`}>
                         {render && render(connectedCmuObjs[index * 4 + 1])}
                       </Card>
                     </Col>
                   </Row>
                   <Row gutter={[16, 16]} wrap justify="start" align="top">
                     <Col flex="none">
-                      <Card size="small" title="CMU 3">
+                      <Card size="small" title={`CMU ${index * 4 + 3}`}>
                         {render && render(connectedCmuObjs[index * 4 + 2])}
                       </Card>
                     </Col>
                     <Col flex="none">
-                      <Card size="small" title="CMU 4">
+                      <Card size="small" title={`CMU ${index * 4 + 4}`}>
                         {render && render(connectedCmuObjs[index * 4 + 3])}
                       </Card>
                     </Col>

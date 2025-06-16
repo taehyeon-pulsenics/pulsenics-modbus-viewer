@@ -74,6 +74,7 @@ const ModbusProvider = ({ children }) => {
   const [dutUndervoltageLimit, setDutUndervoltageLimit] = useState(0)
   const [voltageDeviationLimit, setVoltageDeviationLimit] = useState(0)
   const [probeSn, setProbeSn] = useState('')
+  const [modbusVersion, setModbusVersion] = useState('')
   const [clientMsg, setClientMsg] = useState('')
 
   return (
@@ -197,6 +198,8 @@ const ModbusProvider = ({ children }) => {
         setVoltageDeviationLimit,
         probeSn,
         setProbeSn,
+        modbusVersion,
+        setModbusVersion,
         clientMsg,
         setClientMsg
       }}

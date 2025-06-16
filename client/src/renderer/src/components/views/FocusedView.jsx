@@ -9,12 +9,12 @@ import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 
 const FocusedView = () => {
   const {
-    connectedCmus,
     sampleStarted,
     sampleCompleted,
     sampleReceived,
     sampleFailed,
     probeSn,
+    modbusVersion,
     clientMsg
   } = useContext(ModbusContext)
   const { config } = useSocket()
@@ -24,7 +24,16 @@ const FocusedView = () => {
       <Row gutter={16}>
         <Col span={12}>
           <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-            {!config.legacy && <Typography.Title keyboard>{probeSn}</Typography.Title>}
+            {!config.legacy && (
+              <Typography.Title keyboard style={{ margin: 0 }}>
+                Probe SN: {probeSn}
+              </Typography.Title>
+            )}
+            {!config.legacy && (
+              <Typography.Title level={3} keyboard style={{ margin: 0 }}>
+                Modbus Server Version {modbusVersion}
+              </Typography.Title>
+            )}
             {!config.legacy && (
               <CollapsibleCard size="small" title="Latest Client Message">
                 {clientMsg}

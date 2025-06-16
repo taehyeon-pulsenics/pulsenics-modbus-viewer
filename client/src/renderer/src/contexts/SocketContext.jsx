@@ -77,6 +77,7 @@ export function SocketProvider({ children }) {
     setDutUndervoltageLimit,
     setVoltageDeviationLimit,
     setProbeSn,
+    setModbusVersion,
     setClientMsg
   } = useContext(ModbusContext)
 
@@ -366,6 +367,13 @@ export function SocketProvider({ children }) {
         const probeSnLen = buffer.readUInt16BE(200)
         if (probeSnLen > 0) {
           setProbeSn(buffer.subarray(202, 232).toString('utf-8').substring(0, probeSnLen))
+        }
+
+        const modbusVersionLen = buffer.readUInt16BE(234)
+        if (modbusVersionLen > 0) {
+          setModbusVersion(
+            buffer.subarray(236, 266).toString('utf-8').substring(0, modbusVersionLen)
+          )
         }
 
         const clientMsgLen = buffer.readUInt16BE(400)

@@ -1,9 +1,9 @@
 import { useContext } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { Space } from 'antd'
-import { CircleCheck, CircleX } from 'lucide-react'
 import { useSocket } from '../../contexts/SocketContext'
 import FaultPanelView from '../subviews/FaultPanelView'
+import BooleanList from '../lists/BooleanList'
 
 const ErrorSignalsView = () => {
   const { sampleFailed } = useContext(ModbusContext)
@@ -12,9 +12,7 @@ const ErrorSignalsView = () => {
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
       {!config.legacy && (
-        <p>
-          Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
+        <BooleanList dataSource={[{ title: 'Sample Failed', data: sampleFailed }]} />
       )}
 
       <FaultPanelView />

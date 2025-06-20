@@ -1,8 +1,8 @@
-import { Card, Row, Col, List, Typography, Tooltip, Flex, Space } from 'antd'
-import { AlertTriangle, CircleDashed, CircleSlash, MessageCircleQuestion } from 'lucide-react'
+import { Row, Col } from 'antd'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { useContext } from 'react'
 import CollapsibleCard from '../cards/CollapsibleCard'
+import FaultList from '../lists/FaultList'
 
 const FaultPanelView = () => {
   const {
@@ -122,44 +122,13 @@ const FaultPanelView = () => {
     <CollapsibleCard size="small" title="Error Signals">
       <Row gutter={16}>
         <Col span={12}>
-          <FaultList list={left} />
+          <FaultList dataSource={left} />
         </Col>
         <Col span={12}>
-          <FaultList list={right} />
+          <FaultList dataSource={right} />
         </Col>
       </Row>
     </CollapsibleCard>
-  )
-}
-
-const FaultList = ({ list }) => {
-  return (
-    <List
-      dataSource={list}
-      renderItem={(item) => (
-        <List.Item>
-          <List.Item.Meta
-            avatar={
-              <Tooltip title={<FaultDescriptor details={item.details} />}>
-                {item.data ? <CircleSlash color="red" /> : <CircleDashed />}
-              </Tooltip>
-            }
-            title={<Typography.Text>{item.title}</Typography.Text>}
-          />
-        </List.Item>
-      )}
-    />
-  )
-}
-
-const FaultDescriptor = ({ details }) => {
-  return (
-    <Space direction="vertical">
-      <Typography.Text type="danger">
-        When <CircleSlash color="red" size={14} /> :
-      </Typography.Text>
-      <Typography.Text type="danger">{details}</Typography.Text>
-    </Space>
   )
 }
 

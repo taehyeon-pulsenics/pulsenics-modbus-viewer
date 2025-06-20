@@ -1,10 +1,12 @@
 import { useContext } from 'react'
 import { ModbusContext } from '../../contexts/ModbusContext'
 import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
-import { Space, Table } from 'antd'
+import { List, Space, Table, Typography } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
+import BooleanList from '../lists/BooleanList'
+import ProbeStatusSubview from '../subviews/ProbeStatusView'
 
 const ProbeStatusView = () => {
   const {
@@ -15,7 +17,6 @@ const ProbeStatusView = () => {
     interruptCoil,
     sampleStarted,
     sampleCompleted,
-    connectedCmus,
     sampleReceived,
     sampleFailed,
     minFreq,
@@ -42,41 +43,25 @@ const ProbeStatusView = () => {
         }
       />
       <CollapsibleCard size="small" title="DC Coil">
-        <p>
-          Update DC Sample Rate:{' '}
-          {updateDCSamplingRateCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
+        <BooleanList
+          dataSource={[{ title: 'Update DC Sample Rate', data: updateDCSamplingRateCoil }]}
+        />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="DC Sampling Rate">
         {newDcSamplingRate} /s
       </CollapsibleCard>
       <CollapsibleCard size="small" title="AC Coil">
-        <p>Sample Mode: {sampleModeCoil ? 'Galvanostatic' : 'Potentiostatic'}</p>
-        <p>Start EIS: {startEISCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}</p>
-        <p>
-          Interrupt EIS: {interruptCoil ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
+        <BooleanList
+          dataSource={[
+            { title: 'Start EIS', data: startEISCoil },
+            { title: 'Interrupt EIS', data: interruptCoil }
+          ]}
+        />
       </CollapsibleCard>
 
-      <CollapsibleCard size="small" title="Probe Status">
-        <p>
-          Sample Started: {sampleStarted ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
-        <p>
-          Sample Completed:{' '}
-          {sampleCompleted ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
-        <p>
-          Sample Received:{' '}
-          {sampleReceived ? <CircleCheck color="green" /> : <CircleX color="red" />}
-        </p>
-        {!config.legacy && (
-          <p>
-            Sample Failed: {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
-          </p>
-        )}
-      </CollapsibleCard>
+      <ProbeStatusSubview />
       <CollapsibleCard size="small" title="Sampling Control">
+        <p>Sample Mode: {sampleModeCoil ? 'Galvanostatic' : 'Potentiostatic'}</p>
         <p>Minimum Frequency: {minFreq} Hz</p>
         <p>Maximum Frequency: {maxFreq} Hz</p>
         <p>Amplitude: {amp} A</p>

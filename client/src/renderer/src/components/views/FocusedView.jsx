@@ -6,6 +6,7 @@ import CollapsibleCard from '../cards/CollapsibleCard'
 import FaultPanelView from '../subviews/FaultPanelView'
 import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
+import ProbeStatusView from '../subviews/ProbeStatusView'
 
 const FocusedView = () => {
   const {
@@ -40,26 +41,7 @@ const FocusedView = () => {
               </CollapsibleCard>
             )}
 
-            <CollapsibleCard size="small" title="Probe Status">
-              <p>
-                Sample Started:{' '}
-                {sampleStarted ? <CircleCheck color="green" /> : <CircleX color="red" />}
-              </p>
-              <p>
-                Sample Completed:{' '}
-                {sampleCompleted ? <CircleCheck color="green" /> : <CircleX color="red" />}
-              </p>
-              <p>
-                Sample Received:{' '}
-                {sampleReceived ? <CircleCheck color="green" /> : <CircleX color="red" />}
-              </p>
-              {!config.legacy && (
-                <p>
-                  Sample Failed:{' '}
-                  {sampleFailed ? <CircleCheck color="green" /> : <CircleX color="red" />}
-                </p>
-              )}
-            </CollapsibleCard>
+            <ProbeStatusView />
           </Space>
         </Col>
         <Col span={12}>

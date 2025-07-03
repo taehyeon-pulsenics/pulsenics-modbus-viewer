@@ -40,20 +40,22 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; client code
-Source: ".\client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
-; server code
-Source: ".\server\dist\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs createallsubdirs
-; public
-Source: ".\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
-; main code
-Source: ".\start.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\run_silently.vbs"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\run.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; config code
-Source: ".\config.example.json"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\config.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "server\config.example.json"; DestDir: "{app}\server"; Flags: ignoreversion
+Source: "server\config.json"; DestDir: "{app}\server"; Flags: ignoreversion
+; server code
+Source: "server\nssm\*"; DestDir: "{app}\server\nssm"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "server\dist\*"; DestDir: "{app}\server\src"; Excludes: "__pycache__"; Flags: ignoreversion recursesubdirs createallsubdirs
+; client code
+Source: "client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
+; public
+Source: "public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
+; main code
+Source: "start.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "run_silently.vbs"; DestDir: "{app}"; Flags: ignoreversion
+Source: "run.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
@@ -71,11 +73,12 @@ Filename: {app}\run.bat; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"
 
 [UninstallRun]
 Filename: "{app}\stop.bat"; Flags: runhidden; RunOnceId: "StopAllProcesses"
+Filename: "{app}\uninstall.bat"; Flags: runhidden; RunOnceId: "RemoveServices"
 
 [Code]
 var
   IsUpgrade: Boolean;
-  ShouldRunExecuteStop: Boolean;
+  ShouldRunExecuteUninstall: Boolean;
  
 function RunPowerShellCommand(Command: string): Boolean;
 var
@@ -108,16 +111,15 @@ begin
   end;
 end;
 
-procedure ExecuteStop;
+procedure ExecuteUninstall;
 var
   ResultCode: Integer;
-  StopAppPath: String;
+  UninstallAppPath: String;
 begin
-  // Construct the path for stop.bat only after {app} is initialized
-  StopAppPath := ExpandConstant('{app}\stop.bat');
-  if FileExists(StopAppPath) then
+  UninstallAppPath := ExpandConstant('{app}\uninstall.bat');
+  if FileExists(UninstallAppPath) then
   begin
-    ShellExec('', StopAppPath, '', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    ShellExec('', UninstallAppPath, '', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   end
   else
   begin
@@ -127,10 +129,10 @@ end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if (CurStep = ssInstall) and ShouldRunExecuteStop then
+  if (CurStep = ssInstall) and ShouldRunExecuteUninstall then
   begin
     // Now it's safe to use {app} as it has been initialized
-    ExecuteStop;
+    ExecuteUninstall;
   end;
 end;
 
@@ -142,7 +144,7 @@ var
   InstallPath: String;
 begin
   IsUpgrade := IsAppAlreadyInstalled;
-  ShouldRunExecuteStop := False;
+  ShouldRunExecuteUninstall := False;
 
   if IsUpgrade then
   begin
@@ -155,7 +157,7 @@ begin
         begin
           // Proceed with the repair (continue with the installation)
           MsgBox('Repairing the installation...', mbInformation, MB_OK);
-          ShouldRunExecuteStop := True; // Defer the call to ExecuteStop
+          ShouldRunExecuteUninstall := True; // Defer the call to ExecuteUninstall
         end;
       IDNO:
         begin

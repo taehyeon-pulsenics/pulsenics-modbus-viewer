@@ -25,9 +25,11 @@ modbus_reader = ModbusReader(config.probe_ip, config.legacy, sio=sio_server)
 
 modbus_reader.create_poll_thread().start()
 
+
 @app.get("/")
 def hello_world():
     return {'Modbus backend is running.'}
+
 
 @app.get('/config')
 def get_config():
@@ -35,6 +37,7 @@ def get_config():
         "probeIp": config.probe_ip,
         "legacy": config.legacy
     }
+
 
 @app.post('/config')
 def post_config(input: api_request_types.ConfigInput):
@@ -51,5 +54,4 @@ def serve():
     uvicorn.run(sio_app, port=3000)
 
 
-if __name__ == "__main__":
-    serve()
+serve()

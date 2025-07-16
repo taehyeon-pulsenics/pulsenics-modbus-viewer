@@ -1,5 +1,4 @@
-// modbusPollerWithChunking.js
-import ModbusRTU from 'modbus-serial';
+const ModbusRTU = require('modbus-serial');
 
 // Modbus protocol limits
 const LIMITS = {
@@ -32,36 +31,6 @@ const SLAVES = [
       inputRegs: { start: 0, count: 47284 },
     },
   },
-  //   {
-  //     name: 'AC 2',
-  //     unitId: 3,
-  //     readConfig: {
-  //       coils: { start: 0, count: 0 },
-  //       discrete: { start: 0, count: 0 },
-  //       holdingRegs: { start: 0, count: 0 },
-  //       inputRegs: { start: 0, count: 47284 },
-  //     },
-  //   },
-  //   {
-  //     name: 'AC 3',
-  //     unitId: 4,
-  //     readConfig: {
-  //       coils: { start: 0, count: 0 },
-  //       discrete: { start: 0, count: 0 },
-  //       holdingRegs: { start: 0, count: 0 },
-  //       inputRegs: { start: 0, count: 47284 },
-  //     },
-  //   },
-  //   {
-  //     name: 'AC 4',
-  //     unitId: 5,
-  //     readConfig: {
-  //       coils: { start: 0, count: 0 },
-  //       discrete: { start: 0, count: 0 },
-  //       holdingRegs: { start: 0, count: 0 },
-  //       inputRegs: { start: 0, count: 47284 },
-  //     },
-  //   },
   {
     name: 'Miscellaneous',
     unitId: 6,
@@ -190,7 +159,7 @@ async function pollAllSlaves(io) {
   }
 }
 
-export function pollModbus(host, port, io, interval) {
+function pollModbus(host, port, io, interval) {
   clearInterval(interval);
 
   const newInterval = setInterval(() => {
@@ -219,3 +188,5 @@ const broadcast_registers = (io, key, registers) => {
 const broadcast_connection = (io, connection) => {
   io.emit('connection', connection);
 };
+
+module.exports = { pollModbus };

@@ -2,16 +2,16 @@
   "name": "pulsenics-modbus-viewer-server",
   "version": "1.0.0",
   "main": "src/index.js",
-  "type": "module",
-  "bin": "src/index.js",
+  "type": "commonjs",
+  "bin": "build/index.cjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./index.js",
     "dev": "nodemon ./index.js",
-    "dist": "npx pkg ."
+    "dist": "npm run build && npx pkg .",
+    "build": "npx esbuild src/index.js --bundle --platform=node --target=node18 --format=cjs --outfile=build/index.cjs"
   },
   "pkg": {
-    "scripts": "src/**/*.js",
     "targets": [
       "node18-win-x64"
     ],
@@ -22,7 +22,7 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0",
+    "express": "^4.18.2",
     "modbus-serial": "^8.0.21",
     "serialport": "^13.0.0",
     "socket.io": "^4.8.1"

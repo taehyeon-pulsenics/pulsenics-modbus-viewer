@@ -1,12 +1,13 @@
-import e from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import CONFIG from './config.cjs';
-import fs from 'fs';
-import cors from 'cors';
-import { pollModbus } from './modbus.js';
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const fs = require('fs');
+const cors = require('cors');
+const path = require('path');
+const { pollModbus } = require('./modbus.js');
+const CONFIG = require('./config.cjs');
 
-const app = e();
+const app = express();
 const server = http.createServer(app);
 
 // Configure Socket.IO with CORS (adjust "origin" as needed in production)
@@ -24,7 +25,7 @@ app.use(
     origin: 'http://localhost:5173',
   })
 );
-app.use(e.json());
+app.use(express.json());
 
 // Basic HTTP endpoint (if needed)
 app.get('/', (req, res) => {
@@ -36,23 +37,22 @@ app.get('/config', (_, res) => {
 });
 
 app.post('/config', async (req, res) => {
-  const body = req.body;
+  const { probeIp, legacy } = req.body ?? {};
 
-  if (
-    body === undefined ||
-    body.probeIp === undefined ||
-    body.legacy === undefined
-  ) {
-    throw new Error('INCORRECT CONFIG');
+  if (probeIp == null || legacy == null) {
+    return res.status(400).send('INCORRECT CONFIG');
   }
 
-  CONFIG.probeIp = body.probeIp;
-  CONFIG.legacy = body.legacy;
-  fs.writeFileSync('../config.json', JSON.stringify(CONFIG, null, 2));
+  CONFIG.probeIp = probeIp;
+  CONFIG.legacy = legacy;
+
+  // write back to JSON file
+  const targetPath = path.join(__dirname, '../config.json');
+  fs.writeFileSync(targetPath, JSON.stringify(CONFIG, null, 2), 'utf-8');
 
   timeout = pollModbus(body.probeIp, 502, io, timeout);
 
-  res.send();
+  res.sendStatus(204);
 });
 
 io.on('connection', (socket) => {

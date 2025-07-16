@@ -31,7 +31,7 @@ if '%errorlevel%' NEQ '0' (
 
 set STOP_PATH=%~dp0stop.bat
 set SERVICE_NAME=PulsenicsModbusViewerServer
-set NSSM_PATH=%~dp0server\nssm\nssm.exe
+set NSSM_PATH=%~dp0nssm\nssm.exe
 
 :: stop processes
 start cmd /c call "%STOP_PATH%"

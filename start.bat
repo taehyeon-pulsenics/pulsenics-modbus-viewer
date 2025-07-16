@@ -3,10 +3,10 @@ setlocal
 
 :: === CONFIGURATION ===
 set SERVICE_NAME=PulsenicsModbusViewerServer
-set NSSM_EXE=%~dp0server\nssm\nssm.exe
-set SERVER_PATH=%~dp0server\src\main.py
-set ELECTRON_PATH=%~dp0client\pulsenics-modbus-viewer-app.exe
-set LOG_DIR=%~dp0server\logs
+set NSSM_EXE=%~dp0nssm\nssm.exe
+set SERVER_EXE=%~dp0server-js\dist\pulsenics-modbus-viewer-server.exe
+set ELECTRON_EXE=%~dp0client\pulsenics-modbus-viewer-app.exe
+set LOG_DIR=%~dp0logs
 
 :: === FIND PYTHON (first match only) ===
 for /f "delims=" %%A in ('where python.exe 2^>nul') do (
@@ -30,8 +30,8 @@ if not exist "%LOG_DIR%" (
 "%NSSM_EXE%" status "%SERVICE_NAME%" >nul 2>&1
 if errorlevel 1 (
   echo Installing service "%SERVICE_NAME%"...
-  "%NSSM_EXE%" install "%SERVICE_NAME%" "%PYTHON_EXE%" "-u \"%SERVER_PATH%\""
-  "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%~dp0server\src"
+  "%NSSM_EXE%" install "%SERVICE_NAME%" "%SERVER_EXE%"
+  "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%~dp0server-js\dist"
   "%NSSM_EXE%" set "%SERVICE_NAME%" AppStdout  "%LOG_DIR%\service.log"
   "%NSSM_EXE%" set "%SERVICE_NAME%" AppStderr  "%LOG_DIR%\service-error.log"
   "%NSSM_EXE%" set "%SERVICE_NAME%" Start SERVICE_AUTO_START
@@ -43,7 +43,7 @@ REM — Start server service
 "%NSSM_EXE%" start %SERVICE_NAME%
 
 REM — Launch Electron app and wait for it to close
-start "" /WAIT "%ELECTRON_PATH%"
+start "" /WAIT "%ELECTRON_EXE%"
 
 REM — Electron has exited; now shut down all relevant processes
 start /b "" .\stop.bat

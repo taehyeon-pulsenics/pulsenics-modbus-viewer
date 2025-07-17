@@ -74,11 +74,9 @@ async function connectToAllSlaves(host, port, io) {
       await client.connectTCP(host, { port });
 
       client.setID(slave.unitId);
-      console.log(`✔ Connected to ${slave.name} (Unit ${slave.unitId})`);
 
       broadcast_connection(io, true);
     } catch (err) {
-      console.error(`✖ Failed to connect to ${slave.name}:`, err.message);
       broadcast_connection(io, false);
     }
   }

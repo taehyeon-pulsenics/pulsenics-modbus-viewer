@@ -43,8 +43,6 @@ const SLAVES = [
   },
 ];
 
-let connectionBroadcastInterval;
-
 // Helper: read in chunks and concatenate results
 async function readInChunks(client, fnName, start, count, chunkLimit) {
   const readFn = client[fnName].bind(client);

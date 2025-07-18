@@ -51,6 +51,45 @@ const SLAVES = [
   },
 ];
 
+/**
+ * Initialize socket connection to Modbus Server at given address
+ * @param {string} host IPv4 of Modbus Server
+ * @param {string} port Port of Modbus Server
+ * @param {Server} io Socket IO server instance
+ */
+const initModbusConnections = (host, port, io) => {
+  for (const slave of SLAVES) {
+    const client = createModbusClientConnection(host, port, slave.unitId, io);
+    slave.client = client;
+  }
+};
+
+/**
+ * Create new Modbus connection at given address's unit
+ *
+ * @param {string} host IPv4 of Modbus Server
+ * @param {string} port Port of Modbus Server
+ * @param {number} unitId Unit (Slave) ID
+ * @param {Server} io Socket IO server instance
+ * @returns {ModbusRTU} New opened ModbusRTU instance
+ */
+const createModbusClientConnection = (host, port, unitId, io) => {
+  const client = new ModbusRTU();
+
+  client
+    .connectTCP(host, { port })
+    .then(() => {
+      client.setID(unitId);
+
+      broadcast_connection(io, true);
+    })
+    .catch(() => {
+      broadcast_connection(io, false);
+    });
+
+  return client;
+};
+
 // Helper: read in chunks and concatenate results
 async function readInChunks(client, fnName, start, count, chunkLimit) {
   const readFn = client[fnName].bind(client);
@@ -70,31 +109,15 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
   return result;
 }
 
-async function connectToAllSlaves(host, port, io) {
-  // Create and connect clients
-  for (const slave of SLAVES) {
-    const client = new ModbusRTU();
-    slave.client = client;
-
-    try {
-      await client.connectTCP(host, { port });
-
-      client.setID(slave.unitId);
-
-      broadcast_connection(io, true);
-    } catch (err) {
-      broadcast_connection(io, false);
-    }
-  }
-}
-
 // Poller
 /**
  *
+ * @param {string} host IPv4 of Modbus Server
+ * @param {string} port Port of Modbus Server
  * @param {{ [key: str]: Actor }} actors
  * @param {Server} io
  */
-async function pollAllSlaves(actors, io) {
+async function pollAllSlaves(host, port, actors, io) {
   for (const slave of SLAVES) {
     const { name, unitId, client, readConfig } = slave;
 
@@ -113,6 +136,9 @@ async function pollAllSlaves(actors, io) {
       broadcast_registers(io, `${unitId}_1`, coils);
     } catch (err) {
       console.error(`Error polling coils of ${name}:`, err.message);
+      if (!client.isOpen) {
+        slave.client = createModbusClientConnection(host, port, unitId, io);
+      }
     }
 
     // Discrete inputs
@@ -130,6 +156,9 @@ async function pollAllSlaves(actors, io) {
       broadcast_registers(io, `${unitId}_2`, discrete);
     } catch (err) {
       console.error(`Error polling discrete inputs of ${name}:`, err.message);
+      if (!client.isOpen) {
+        slave.client = createModbusClientConnection(host, port, unitId, io);
+      }
     }
 
     try {
@@ -147,6 +176,9 @@ async function pollAllSlaves(actors, io) {
       broadcast_registers(io, `${unitId}_3`, holding);
     } catch (err) {
       console.error(`Error holding registers of ${name}:`, err.message);
+      if (!client.isOpen) {
+        slave.client = createModbusClientConnection(host, port, unitId, io);
+      }
     }
 
     try {
@@ -178,6 +210,9 @@ async function pollAllSlaves(actors, io) {
       broadcast_registers(io, `${unitId}_4`, inputs);
     } catch (err) {
       console.error(`Error polling input registers of ${name}:`, err.message);
+      if (!client.isOpen) {
+        slave.client = createModbusClientConnection(host, port, unitId, io);
+      }
     }
   }
 }
@@ -194,11 +229,12 @@ async function pollAllSlaves(actors, io) {
 function pollModbus(host, port, actors, io, interval) {
   clearInterval(interval);
 
+  initModbusConnections(host, port, io);
+
   const newInterval = setInterval(() => {
-    connectToAllSlaves(host, port, io).then(() => {
-      pollAllSlaves(actors, io);
-    });
+    pollAllSlaves(host, port, actors, io);
   }, 1000);
+
   return newInterval;
 }
 

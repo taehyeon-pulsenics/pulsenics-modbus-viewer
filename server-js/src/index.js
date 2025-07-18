@@ -53,7 +53,14 @@ app.post('/config', async (req, res) => {
   const targetPath = path.join(__dirname, '../config.json');
   fs.writeFileSync(targetPath, JSON.stringify(CONFIG, null, 2), 'utf-8');
 
-  timeout = pollModbus(body.probeIp, 502, actors, io, timeout);
+  timeout = pollModbus(probeIp, 502, actors, io, timeout);
+
+  res.sendStatus(204);
+});
+app.post('/modbus-data', async (req, res) => {
+  for (const actor of Object.values(actors)) {
+    actor.send({ type: 'RETRIEVE' });
+  }
 
   res.sendStatus(204);
 });

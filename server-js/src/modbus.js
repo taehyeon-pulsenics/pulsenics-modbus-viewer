@@ -1,6 +1,7 @@
 const ModbusRTU = require('modbus-serial');
 const { Server } = require('socket.io');
 const { Actor } = require('xstate');
+const { MODBUS_STATE } = require('./modbus-state');
 
 // Modbus protocol limits
 const LIMITS = {
@@ -20,21 +21,209 @@ const SLAVES = [
       coils: { start: 0, count: 1 },
       discrete: { start: 0, count: 0 },
       holdingRegs: { start: 0, count: 2 },
-      inputRegs: { start: 0, count: 776 },
+      inputRegs: {
+        start: 0,
+        count: 776,
+        actors: {
+          [MODBUS_STATE.DC.CURRENT]: { address: [{ start: 6, end: 8 }] },
+          [MODBUS_STATE.DC.PROBE_VOLTAGE]: { address: [{ start: 4, end: 6 }] },
+          [MODBUS_STATE.DC.CMU_1_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (1 - 1),
+                end: 8 + 48 * 1,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_2_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (2 - 1),
+                end: 8 + 48 * 2,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_3_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (3 - 1),
+                end: 8 + 48 * 3,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_4_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (4 - 1),
+                end: 8 + 48 * 4,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_5_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (5 - 1),
+                end: 8 + 48 * 5,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_6_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (6 - 1),
+                end: 8 + 48 * 6,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_7_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (7 - 1),
+                end: 8 + 48 * 7,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_8_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (8 - 1),
+                end: 8 + 48 * 8,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_9_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (9 - 1),
+                end: 8 + 48 * 9,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_10_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (10 - 1),
+                end: 8 + 48 * 10,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_11_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (11 - 1),
+                end: 8 + 48 * 11,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_12_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (12 - 1),
+                end: 8 + 48 * 12,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_13_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (13 - 1),
+                end: 8 + 48 * 13,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_14_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (14 - 1),
+                end: 8 + 48 * 14,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_15_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (15 - 1),
+                end: 8 + 48 * 15,
+              },
+            ],
+          },
+          [MODBUS_STATE.DC.CMU_16_VOLTAGE]: {
+            address: [
+              {
+                start: 8 + 48 * (16 - 1),
+                end: 8 + 48 * 16,
+              },
+            ],
+          },
+        },
+      },
     },
   },
   {
     name: 'AC 1',
     unitId: 2,
     readConfig: {
-      coils: { start: 0, count: 3 },
-      discrete: { start: 0, count: 20 },
-      holdingRegs: { start: 0, count: 232 },
+      coils: {
+        start: 0,
+        count: 3,
+        actors: {
+          [MODBUS_STATE.AC_1.SAMPLE_COILS]: {
+            address: [{ start: 0, end: 4 }],
+          },
+        },
+      },
+      discrete: {
+        start: 0,
+        count: 20,
+        actors: {
+          [MODBUS_STATE.AC_1.SAMPLE_STATUS]: {
+            address: [
+              { start: 0, end: 2 },
+              { start: 18, end: 20 },
+            ],
+          },
+          [MODBUS_STATE.AC_1.CONNECTED_CMUS]: {
+            address: [{ start: 2, end: 18 }],
+          },
+        },
+      },
+      holdingRegs: {
+        start: 0,
+        count: 232,
+        actors: {
+          [MODBUS_STATE.AC_1.SAMPLE_CONTROLS]: {
+            address: [{ start: 0, end: 10 }],
+          },
+          [MODBUS_STATE.AC_1.SAMPLE_METADATA]: {
+            address: [{ start: 100, end: 232 }],
+          },
+        },
+      },
       inputRegs: {
         start: 0,
         count: 47284,
-        stateUpdate: {
-          frequenciesActor: { start: 4, end: 244 },
+        actors: {
+          [MODBUS_STATE.AC_1.FREQUENCIES]: {
+            address: [{ start: 4, end: 244 }],
+          },
+          [MODBUS_STATE.AC_1.CURRENT]: {
+            address: [{ start: 244, end: 724 }],
+          },
+          [MODBUS_STATE.AC_1.PROBE_VOLTAGE]: {
+            address: [{ start: 724, end: 1204 }],
+          },
+          [MODBUS_STATE.AC_1.CMU_1_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (1 - 1), end: 1204 + 11520 * 1 }],
+          },
+          [MODBUS_STATE.AC_1.CMU_2_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (2 - 1), end: 1204 + 11520 * 2 }],
+          },
+          [MODBUS_STATE.AC_1.CMU_3_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (3 - 1), end: 1204 + 11520 * 3 }],
+          },
+          [MODBUS_STATE.AC_1.CMU_4_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (4 - 1), end: 1204 + 11520 * 4 }],
+          },
         },
       },
     },
@@ -43,10 +232,51 @@ const SLAVES = [
     name: 'Miscellaneous',
     unitId: 6,
     readConfig: {
-      coils: { start: 0, count: 14 },
-      discrete: { start: 0, count: 15 },
-      holdingRegs: { start: 0, count: 10 },
-      inputRegs: { start: 0, count: 325 },
+      coils: {
+        start: 0,
+        count: 14,
+        actors: {
+          [MODBUS_STATE.MISC.COILS]: {
+            address: [{ start: 0, end: 14 }],
+          },
+        },
+      },
+      discrete: {
+        start: 0,
+        count: 18,
+        actors: {
+          [MODBUS_STATE.MISC.FAULTS]: {
+            address: [{ start: 0, end: 18 }],
+          },
+        },
+      },
+      holdingRegs: {
+        start: 0,
+        count: 10,
+        actors: {
+          [MODBUS_STATE.MISC.NEW_LIMITS]: {
+            address: [{ start: 0, end: 10 }],
+          },
+        },
+      },
+      inputRegs: {
+        start: 0,
+        count: 325,
+        actors: {
+          [MODBUS_STATE.MISC.LIMITS]: {
+            address: [{ start: 0, end: 10 }],
+          },
+          [MODBUS_STATE.MISC.PROBE_SERIAL_NUMBER]: {
+            address: [{ start: 100, end: 117 }],
+          },
+          [MODBUS_STATE.MISC.MODBUS_VERSION_NUMBER]: {
+            address: [{ start: 117, end: 134 }],
+          },
+          [MODBUS_STATE.MISC.CLIENT_MESSAGE]: {
+            address: [{ start: 200, end: 325 }],
+          },
+        },
+      },
     },
   },
 ];
@@ -133,6 +363,22 @@ async function pollAllSlaves(host, port, actors, io) {
               LIMITS.coils
             )
           : null;
+
+      if (coils && readConfig.coils.actors) {
+        for (const actor of Object.keys(readConfig.coils.actors)) {
+          const actorDetail = readConfig.coils.actors[actor];
+          const addresses = actorDetail.address;
+          let regs = [];
+          for (const { start, end } of addresses) {
+            regs = regs.concat(coils.slice(start, end));
+          }
+          actors[actor].send({
+            type: 'POLL',
+            regs,
+          });
+        }
+      }
+
       broadcast_registers(io, `${unitId}_1`, coils);
     } catch (err) {
       console.error(`Error polling coils of ${name}:`, err.message);
@@ -153,6 +399,22 @@ async function pollAllSlaves(host, port, actors, io) {
               LIMITS.discrete
             )
           : null;
+
+      if (discrete && readConfig.discrete.actors) {
+        for (const actor of Object.keys(readConfig.discrete.actors)) {
+          const actorDetail = readConfig.discrete.actors[actor];
+          const addresses = actorDetail.address;
+          let regs = [];
+          for (const { start, end } of addresses) {
+            regs = regs.concat(discrete.slice(start, end));
+          }
+          actors[actor].send({
+            type: 'POLL',
+            regs,
+          });
+        }
+      }
+
       broadcast_registers(io, `${unitId}_2`, discrete);
     } catch (err) {
       console.error(`Error polling discrete inputs of ${name}:`, err.message);
@@ -173,6 +435,22 @@ async function pollAllSlaves(host, port, actors, io) {
               LIMITS.holdingRegs
             )
           : null;
+
+      if (holding && readConfig.holdingRegs.actors) {
+        for (const actor of Object.keys(readConfig.holdingRegs.actors)) {
+          const actorDetail = readConfig.holdingRegs.actors[actor];
+          const addresses = actorDetail.address;
+          let regs = [];
+          for (const { start, end } of addresses) {
+            regs = regs.concat(holding.slice(start, end));
+          }
+          actors[actor].send({
+            type: 'POLL',
+            regs,
+          });
+        }
+      }
+
       broadcast_registers(io, `${unitId}_3`, holding);
     } catch (err) {
       console.error(`Error holding registers of ${name}:`, err.message);
@@ -194,12 +472,14 @@ async function pollAllSlaves(host, port, actors, io) {
             )
           : null;
 
-      if (readConfig.inputRegs.stateUpdate) {
-        for (const actor of Object.keys(readConfig.inputRegs.stateUpdate)) {
-          const regs = inputs.slice(
-            readConfig.inputRegs.stateUpdate[actor].start,
-            readConfig.inputRegs.stateUpdate[actor].end
-          );
+      if (inputs && readConfig.inputRegs.actors) {
+        for (const actor of Object.keys(readConfig.inputRegs.actors)) {
+          const actorDetail = readConfig.inputRegs.actors[actor];
+          const addresses = actorDetail.address;
+          let regs = [];
+          for (const { start, end } of addresses) {
+            regs = regs.concat(inputs.slice(start, end));
+          }
           actors[actor].send({
             type: 'POLL',
             regs,
@@ -231,8 +511,12 @@ function pollModbus(host, port, actors, io, interval) {
 
   initModbusConnections(host, port, io);
 
+  let busy = false;
+
   const newInterval = setInterval(() => {
+    busy = true;
     pollAllSlaves(host, port, actors, io);
+    busy = false;
   }, 1000);
 
   return newInterval;

@@ -1,10 +1,11 @@
 const { createMachine, assign } = require('xstate');
+const { convertRegistersToBuffer } = require('../utils');
 
-const createModbusMachine = (id, initialRegisters, broadcast) =>
+const createModbusMachine = (id, nRegisters, io) =>
   createMachine({
     id,
     context: {
-      regs: initialRegisters,
+      regs: Array(nRegisters).fill(0),
     },
     on: {
       POLL: {
@@ -13,9 +14,15 @@ const createModbusMachine = (id, initialRegisters, broadcast) =>
             const newRegs = event.regs;
             const oldRegs = context.regs;
 
+            if (newRegs.length < nRegisters) {
+              throw new Error(
+                'Given number of registers are less than specified nRegisters'
+              );
+            }
+
             for (let i = 0; i < newRegs.length; i++) {
               if (newRegs[i] !== oldRegs[i]) {
-                broadcast && broadcast(newRegs);
+                io && io.emit(id, convertRegistersToBuffer(newRegs));
                 break;
               }
             }
@@ -23,6 +30,11 @@ const createModbusMachine = (id, initialRegisters, broadcast) =>
             return newRegs;
           },
         }),
+      },
+      RETRIEVE: {
+        actions: ({ context }) => {
+          io && io.emit(id, convertRegistersToBuffer(context.regs));
+        },
       },
     },
   });

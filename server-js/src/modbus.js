@@ -1,4 +1,6 @@
 const ModbusRTU = require('modbus-serial');
+const { Server } = require('socket.io');
+const { Actor } = require('xstate');
 
 // Modbus protocol limits
 const LIMITS = {
@@ -28,7 +30,13 @@ const SLAVES = [
       coils: { start: 0, count: 3 },
       discrete: { start: 0, count: 20 },
       holdingRegs: { start: 0, count: 232 },
-      inputRegs: { start: 0, count: 47284 },
+      inputRegs: {
+        start: 0,
+        count: 47284,
+        stateUpdate: {
+          frequenciesActor: { start: 4, end: 244 },
+        },
+      },
     },
   },
   {
@@ -81,7 +89,12 @@ async function connectToAllSlaves(host, port, io) {
 }
 
 // Poller
-async function pollAllSlaves(io) {
+/**
+ *
+ * @param {{ [key: str]: Actor }} actors
+ * @param {Server} io
+ */
+async function pollAllSlaves(actors, io) {
   for (const slave of SLAVES) {
     const { name, unitId, client, readConfig } = slave;
 
@@ -139,7 +152,7 @@ async function pollAllSlaves(io) {
     try {
       // Input registers
       const inputs =
-        readConfig.holdingRegs.count > 0
+        readConfig.inputRegs.count > 0
           ? await readInChunks(
               client,
               'readInputRegisters',
@@ -148,6 +161,20 @@ async function pollAllSlaves(io) {
               LIMITS.inputRegs
             )
           : null;
+
+      if (readConfig.inputRegs.stateUpdate) {
+        for (const actor of Object.keys(readConfig.inputRegs.stateUpdate)) {
+          const regs = inputs.slice(
+            readConfig.inputRegs.stateUpdate[actor].start,
+            readConfig.inputRegs.stateUpdate[actor].end
+          );
+          actors[actor].send({
+            type: 'POLL',
+            regs,
+          });
+        }
+      }
+
       broadcast_registers(io, `${unitId}_4`, inputs);
     } catch (err) {
       console.error(`Error polling input registers of ${name}:`, err.message);
@@ -155,12 +182,21 @@ async function pollAllSlaves(io) {
   }
 }
 
-function pollModbus(host, port, io, interval) {
+/**
+ *
+ * @param {str} host
+ * @param {str | number} port
+ * @param {{ [key: str]: Actor }} actors
+ * @param {Server} io
+ * @param {NodeJS.Timeout} interval
+ * @returns
+ */
+function pollModbus(host, port, actors, io, interval) {
   clearInterval(interval);
 
   const newInterval = setInterval(() => {
     connectToAllSlaves(host, port, io).then(() => {
-      pollAllSlaves(io);
+      pollAllSlaves(actors, io);
     });
   }, 1000);
   return newInterval;

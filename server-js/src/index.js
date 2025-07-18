@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const { pollModbus } = require('./modbus.js');
 const CONFIG = require('./config.cjs');
+const { initModbusStates } = require('./modbus-state');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +19,9 @@ const io = new Server(server, {
   },
 });
 
-let timeout = pollModbus(CONFIG.probeIp, 502, io);
+const { actors } = initModbusStates(io);
+
+let timeout = pollModbus(CONFIG.probeIp, 502, actors, io);
 
 app.use(
   cors({
@@ -50,7 +53,7 @@ app.post('/config', async (req, res) => {
   const targetPath = path.join(__dirname, '../config.json');
   fs.writeFileSync(targetPath, JSON.stringify(CONFIG, null, 2), 'utf-8');
 
-  timeout = pollModbus(body.probeIp, 502, io, timeout);
+  timeout = pollModbus(body.probeIp, 502, actors, io, timeout);
 
   res.sendStatus(204);
 });

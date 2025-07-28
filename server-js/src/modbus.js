@@ -167,7 +167,7 @@ const SLAVES = [
         start: 0,
         count: 3,
         actors: {
-          [MODBUS_STATE.AC_1.SAMPLE_COILS]: {
+          [MODBUS_STATE.AC.SAMPLE_COILS]: {
             address: [{ start: 0, end: 4 }],
           },
         },
@@ -176,13 +176,13 @@ const SLAVES = [
         start: 0,
         count: 20,
         actors: {
-          [MODBUS_STATE.AC_1.SAMPLE_STATUS]: {
+          [MODBUS_STATE.AC.SAMPLE_STATUS]: {
             address: [
               { start: 0, end: 2 },
               { start: 18, end: 20 },
             ],
           },
-          [MODBUS_STATE.AC_1.CONNECTED_CMUS]: {
+          [MODBUS_STATE.AC.CONNECTED_CMUS]: {
             address: [{ start: 2, end: 18 }],
           },
         },
@@ -191,10 +191,10 @@ const SLAVES = [
         start: 0,
         count: 232,
         actors: {
-          [MODBUS_STATE.AC_1.SAMPLE_CONTROLS]: {
+          [MODBUS_STATE.AC.SAMPLE_CONTROLS]: {
             address: [{ start: 0, end: 10 }],
           },
-          [MODBUS_STATE.AC_1.SAMPLE_METADATA]: {
+          [MODBUS_STATE.AC.SAMPLE_METADATA]: {
             address: [{ start: 100, end: 232 }],
           },
         },
@@ -203,25 +203,25 @@ const SLAVES = [
         start: 0,
         count: 47284,
         actors: {
-          [MODBUS_STATE.AC_1.FREQUENCIES]: {
+          [MODBUS_STATE.AC.FREQUENCIES]: {
             address: [{ start: 4, end: 244 }],
           },
-          [MODBUS_STATE.AC_1.CURRENT]: {
+          [MODBUS_STATE.AC.CURRENT]: {
             address: [{ start: 244, end: 724 }],
           },
-          [MODBUS_STATE.AC_1.PROBE_VOLTAGE]: {
+          [MODBUS_STATE.AC.PROBE_VOLTAGE]: {
             address: [{ start: 724, end: 1204 }],
           },
-          [MODBUS_STATE.AC_1.CMU_1_VOLTAGE]: {
+          [MODBUS_STATE.AC.CMU_1_VOLTAGE]: {
             address: [{ start: 1204 + 11520 * (1 - 1), end: 1204 + 11520 * 1 }],
           },
-          [MODBUS_STATE.AC_1.CMU_2_VOLTAGE]: {
+          [MODBUS_STATE.AC.CMU_2_VOLTAGE]: {
             address: [{ start: 1204 + 11520 * (2 - 1), end: 1204 + 11520 * 2 }],
           },
-          [MODBUS_STATE.AC_1.CMU_3_VOLTAGE]: {
+          [MODBUS_STATE.AC.CMU_3_VOLTAGE]: {
             address: [{ start: 1204 + 11520 * (3 - 1), end: 1204 + 11520 * 3 }],
           },
-          [MODBUS_STATE.AC_1.CMU_4_VOLTAGE]: {
+          [MODBUS_STATE.AC.CMU_4_VOLTAGE]: {
             address: [{ start: 1204 + 11520 * (4 - 1), end: 1204 + 11520 * 4 }],
           },
         },

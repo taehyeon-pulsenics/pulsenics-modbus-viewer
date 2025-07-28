@@ -19,6 +19,7 @@ import {
   ModbusConnectionContext,
   ProbeInformationContext
 } from './modbus'
+import { MODBUS_STATE } from '../constants/modbus'
 import axios from 'axios'
 
 // Create a context
@@ -132,68 +133,68 @@ export function SocketProvider({ children }) {
       setModbusConnected((v) => (v === data ? v : !v))
     })
 
-    socketInstance.on('DC/CURRENT', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CURRENT, (data) => {
       const buffer = Buffer.from(data)
 
       setDcCurrent(buffer.readFloatBE(0))
     })
 
-    socketInstance.on('DC/PROBE_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.PROBE_VOLTAGE, (data) => {
       const buffer = Buffer.from(data)
 
       setDcProbeVoltage(buffer.readFloatBE(0))
     })
 
-    socketInstance.on('DC/CMU_1_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_1_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu1Voltage)
     })
-    socketInstance.on('DC/CMU_2_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_2_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu2Voltage)
     })
-    socketInstance.on('DC/CMU_3_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_3_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu3Voltage)
     })
-    socketInstance.on('DC/CMU_4_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_4_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu4Voltage)
     })
-    socketInstance.on('DC/CMU_5_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_5_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu5Voltage)
     })
-    socketInstance.on('DC/CMU_6_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_6_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu6Voltage)
     })
-    socketInstance.on('DC/CMU_7_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_7_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu7Voltage)
     })
-    socketInstance.on('DC/CMU_8_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_8_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu8Voltage)
     })
-    socketInstance.on('DC/CMU_9_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_9_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu9Voltage)
     })
-    socketInstance.on('DC/CMU_10_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_10_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu10Voltage)
     })
-    socketInstance.on('DC/CMU_11_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_11_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu11Voltage)
     })
-    socketInstance.on('DC/CMU_12_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_12_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu12Voltage)
     })
-    socketInstance.on('DC/CMU_13_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_13_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu13Voltage)
     })
-    socketInstance.on('DC/CMU_14_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_14_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu14Voltage)
     })
-    socketInstance.on('DC/CMU_15_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_15_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu15Voltage)
     })
-    socketInstance.on('DC/CMU_16_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.DC.CMU_16_VOLTAGE, (data) => {
       updateDcCmuVoltage(Buffer.from(data), setDcCmu16Voltage)
     })
 
-    socketInstance.on('AC_1/SAMPLE_COILS', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_COILS, (data) => {
       const registers = new Uint16Array(data)
 
       setSampleModeCoil(!!registers[0])
@@ -201,7 +202,7 @@ export function SocketProvider({ children }) {
       setInterruptCoil(!!registers[2])
     })
 
-    socketInstance.on('AC_1/SAMPLE_STATUS', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_STATUS, (data) => {
       const registers = new Uint16Array(data)
 
       setSampleStarted(!!registers[0])
@@ -212,13 +213,13 @@ export function SocketProvider({ children }) {
       }
     })
 
-    socketInstance.on('AC_1/CONNECTED_CMUS', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CONNECTED_CMUS, (data) => {
       const registers = new Uint16Array(data)
 
       setConnectedCmus(Array.from(registers, (v) => Boolean(v)))
     })
 
-    socketInstance.on('AC_1/SAMPLE_CONTROLS', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_CONTROLS, (data) => {
       const buffer = Buffer.from(data)
 
       setMinFreq(buffer.readFloatBE(0))
@@ -228,7 +229,7 @@ export function SocketProvider({ children }) {
       setNSimulFreqs(buffer.readFloatBE(16))
     })
 
-    socketInstance.on('AC_1/SAMPLE_METADATA', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_METADATA, (data) => {
       const buffer = Buffer.from(data)
 
       if (!config.legacy) {
@@ -256,7 +257,7 @@ export function SocketProvider({ children }) {
       }
     })
 
-    socketInstance.on('AC_1/FREQUENCIES', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.FREQUENCIES, (data) => {
       const buffer = Buffer.from(data)
 
       const freqs = []
@@ -266,11 +267,11 @@ export function SocketProvider({ children }) {
       setFreqs(freqs)
     })
 
-    socketInstance.on('AC_1/CURRENT', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CURRENT, (data) => {
       updateAcProbeMagnitudesAndPhases(Buffer.from(data), setAcCurrentMagnitude, setAcCurrentPhase)
     })
 
-    socketInstance.on('AC_1/PROBE_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.PROBE_VOLTAGE, (data) => {
       updateAcProbeMagnitudesAndPhases(
         Buffer.from(data),
         setAcProbeVoltageMagnitude,
@@ -278,7 +279,7 @@ export function SocketProvider({ children }) {
       )
     })
 
-    socketInstance.on('AC_1/CMU_1_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CMU_1_VOLTAGE, (data) => {
       updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu1VoltageMagnitude,
@@ -286,7 +287,7 @@ export function SocketProvider({ children }) {
       )
     })
 
-    socketInstance.on('AC_1/CMU_2_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CMU_2_VOLTAGE, (data) => {
       updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu2VoltageMagnitude,
@@ -294,7 +295,7 @@ export function SocketProvider({ children }) {
       )
     })
 
-    socketInstance.on('AC_1/CMU_3_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CMU_3_VOLTAGE, (data) => {
       updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu3VoltageMagnitude,
@@ -302,7 +303,7 @@ export function SocketProvider({ children }) {
       )
     })
 
-    socketInstance.on('AC_1/CMU_4_VOLTAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.AC.CMU_4_VOLTAGE, (data) => {
       updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu4VoltageMagnitude,
@@ -310,7 +311,7 @@ export function SocketProvider({ children }) {
       )
     })
 
-    socketInstance.on('MISC/FAULTS', (data) => {
+    socketInstance.on(MODBUS_STATE.MISC.FAULTS, (data) => {
       const registers = new Uint16Array(data)
 
       setCriticalFault(!!registers[0])
@@ -333,7 +334,7 @@ export function SocketProvider({ children }) {
       setInputOverloadDetected(!!registers[17])
     })
 
-    socketInstance.on('MISC/PROBE_SERIAL_NUMBER', (data) => {
+    socketInstance.on(MODBUS_STATE.MISC.PROBE_SERIAL_NUMBER, (data) => {
       const buffer = Buffer.from(data)
 
       if (!config.legacy) {
@@ -344,7 +345,7 @@ export function SocketProvider({ children }) {
       }
     })
 
-    socketInstance.on('MISC/MODBUS_VERSION_NUMBER', (data) => {
+    socketInstance.on(MODBUS_STATE.MISC.MODBUS_VERSION_NUMBER, (data) => {
       const buffer = Buffer.from(data)
 
       if (!config.legacy) {
@@ -355,7 +356,7 @@ export function SocketProvider({ children }) {
       }
     })
 
-    socketInstance.on('MISC/CLIENT_MESSAGE', (data) => {
+    socketInstance.on(MODBUS_STATE.MISC.CLIENT_MESSAGE, (data) => {
       const buffer = Buffer.from(data)
 
       if (!config.legacy) {
@@ -368,42 +369,42 @@ export function SocketProvider({ children }) {
 
     // Cleanup listeners when the component unmounts
     return () => {
-      socketInstance.off('DC/CURRENT')
-      socketInstance.off('DC/PROBE_VOLTAGE')
-      socketInstance.off('DC/CMU_1_VOLTAGE')
-      socketInstance.off('DC/CMU_2_VOLTAGE')
-      socketInstance.off('DC/CMU_3_VOLTAGE')
-      socketInstance.off('DC/CMU_4_VOLTAGE')
-      socketInstance.off('DC/CMU_5_VOLTAGE')
-      socketInstance.off('DC/CMU_6_VOLTAGE')
-      socketInstance.off('DC/CMU_7_VOLTAGE')
-      socketInstance.off('DC/CMU_8_VOLTAGE')
-      socketInstance.off('DC/CMU_9_VOLTAGE')
-      socketInstance.off('DC/CMU_10_VOLTAGE')
-      socketInstance.off('DC/CMU_11_VOLTAGE')
-      socketInstance.off('DC/CMU_12_VOLTAGE')
-      socketInstance.off('DC/CMU_13_VOLTAGE')
-      socketInstance.off('DC/CMU_14_VOLTAGE')
-      socketInstance.off('DC/CMU_15_VOLTAGE')
-      socketInstance.off('DC/CMU_16_VOLTAGE')
+      socketInstance.off(MODBUS_STATE.DC.CURRENT)
+      socketInstance.off(MODBUS_STATE.DC.PROBE_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_1_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_2_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_3_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_4_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_5_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_6_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_7_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_8_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_9_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_10_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_11_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_12_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_13_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_14_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_15_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_16_VOLTAGE)
 
-      socketInstance.off('AC_1/SAMPLE_COILS')
-      socketInstance.off('AC_1/SAMPLE_CONTROLS')
-      socketInstance.off('AC_1/SAMPLE_METADATA')
-      socketInstance.off('AC_1/SAMPLE_STATUS')
-      socketInstance.off('AC_1/CONNECTED_CMUS')
-      socketInstance.off('AC_1/FREQUENCIES')
-      socketInstance.off('AC_1/CURRENT')
-      socketInstance.off('AC_1/PROBE_VOLTAGE')
-      socketInstance.off('AC_1/CMU_1_VOLTAGE')
-      socketInstance.off('AC_1/CMU_2_VOLTAGE')
-      socketInstance.off('AC_1/CMU_3_VOLTAGE')
-      socketInstance.off('AC_1/CMU_4_VOLTAGE')
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_COILS)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_CONTROLS)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_METADATA)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_STATUS)
+      socketInstance.off(MODBUS_STATE.AC.CONNECTED_CMUS)
+      socketInstance.off(MODBUS_STATE.AC.FREQUENCIES)
+      socketInstance.off(MODBUS_STATE.AC.CURRENT)
+      socketInstance.off(MODBUS_STATE.AC.PROBE_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_1_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_2_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_3_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_4_VOLTAGE)
 
-      socketInstance.off('MISC/FAULTS')
-      socketInstance.off('MISC/PROBE_SERIAL_NUMBER')
-      socketInstance.off('MISC/MODBUS_VERSION_NUMBER')
-      socketInstance.off('MISC/CLIENT_MESSAGE')
+      socketInstance.off(MODBUS_STATE.MISC.FAULTS)
+      socketInstance.off(MODBUS_STATE.MISC.PROBE_SERIAL_NUMBER)
+      socketInstance.off(MODBUS_STATE.MISC.MODBUS_VERSION_NUMBER)
+      socketInstance.off(MODBUS_STATE.MISC.CLIENT_MESSAGE)
       socketInstance.off('connect')
       socketInstance.disconnect()
     }

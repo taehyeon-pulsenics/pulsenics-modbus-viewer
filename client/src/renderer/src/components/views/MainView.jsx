@@ -37,8 +37,14 @@ const MainView = () => {
 
   // retrieve modbus state on initial load of main view
   useEffect(() => {
-    triggerDataBroadcast()
-  }, [triggerDataBroadcast])
+    if (!modbusConnected) {
+      const timer = setInterval(() => {
+        triggerDataBroadcast()
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+    // if connected, do nothing (no interval to clean up)
+  }, [modbusConnected, triggerDataBroadcast])
 
   /**
    * Modal Control Functions

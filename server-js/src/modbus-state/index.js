@@ -91,7 +91,7 @@ const schema = {
       nRegisters: N_CHANNELS_PER_CMU * N_REGISTERS_PER_FLOAT_32,
     },
   ],
-  AC_1: [
+  AC: [
     { name: 'SAMPLE_COILS', nRegisters: N_SAMPLE_COILS },
     {
       name: 'SAMPLE_CONTROLS',

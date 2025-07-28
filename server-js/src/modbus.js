@@ -378,8 +378,6 @@ async function pollAllSlaves(host, port, actors, io) {
           });
         }
       }
-
-      broadcast_registers(io, `${unitId}_1`, coils);
     } catch (err) {
       console.error(`Error polling coils of ${name}:`, err.message);
       if (!client.isOpen) {
@@ -414,8 +412,6 @@ async function pollAllSlaves(host, port, actors, io) {
           });
         }
       }
-
-      broadcast_registers(io, `${unitId}_2`, discrete);
     } catch (err) {
       console.error(`Error polling discrete inputs of ${name}:`, err.message);
       if (!client.isOpen) {
@@ -450,8 +446,6 @@ async function pollAllSlaves(host, port, actors, io) {
           });
         }
       }
-
-      broadcast_registers(io, `${unitId}_3`, holding);
     } catch (err) {
       console.error(`Error holding registers of ${name}:`, err.message);
       if (!client.isOpen) {
@@ -486,8 +480,6 @@ async function pollAllSlaves(host, port, actors, io) {
           });
         }
       }
-
-      broadcast_registers(io, `${unitId}_4`, inputs);
     } catch (err) {
       console.error(`Error polling input registers of ${name}:`, err.message);
       if (!client.isOpen) {
@@ -521,21 +513,6 @@ function pollModbus(host, port, actors, io, interval) {
 
   return newInterval;
 }
-
-const broadcast_registers = (io, key, registers) => {
-  if (!registers) {
-    io.emit(key, 'null');
-    return;
-  }
-
-  const buffer = Buffer.alloc(registers.length * 2);
-
-  registers.forEach((value, index) => {
-    buffer.writeUInt16BE(value, index * 2);
-  });
-
-  io.emit(key, buffer);
-};
 
 const broadcast_connection = (io, connection) => {
   io.emit('connection', connection);

@@ -267,11 +267,11 @@ export function SocketProvider({ children }) {
     })
 
     socketInstance.on('AC_1/CURRENT', (data) => {
-      updateAcMagnitudesAndPhases(Buffer.from(data), setAcCurrentMagnitude, setAcCurrentPhase)
+      updateAcProbeMagnitudesAndPhases(Buffer.from(data), setAcCurrentMagnitude, setAcCurrentPhase)
     })
 
     socketInstance.on('AC_1/PROBE_VOLTAGE', (data) => {
-      updateAcMagnitudesAndPhases(
+      updateAcProbeMagnitudesAndPhases(
         Buffer.from(data),
         setAcProbeVoltageMagnitude,
         setAcProbeVoltagePhase
@@ -279,7 +279,7 @@ export function SocketProvider({ children }) {
     })
 
     socketInstance.on('AC_1/CMU_1_VOLTAGE', (data) => {
-      updateAcMagnitudesAndPhases(
+      updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu1VoltageMagnitude,
         setAcCmu1VoltagePhase
@@ -287,7 +287,7 @@ export function SocketProvider({ children }) {
     })
 
     socketInstance.on('AC_1/CMU_2_VOLTAGE', (data) => {
-      updateAcMagnitudesAndPhases(
+      updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu2VoltageMagnitude,
         setAcCmu2VoltagePhase
@@ -295,7 +295,7 @@ export function SocketProvider({ children }) {
     })
 
     socketInstance.on('AC_1/CMU_3_VOLTAGE', (data) => {
-      updateAcMagnitudesAndPhases(
+      updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu3VoltageMagnitude,
         setAcCmu3VoltagePhase
@@ -303,7 +303,7 @@ export function SocketProvider({ children }) {
     })
 
     socketInstance.on('AC_1/CMU_4_VOLTAGE', (data) => {
-      updateAcMagnitudesAndPhases(
+      updateAcCmuMagnitudesAndPhases(
         Buffer.from(data),
         setAcCmu4VoltageMagnitude,
         setAcCmu4VoltagePhase
@@ -462,7 +462,7 @@ function updateDcCmuVoltage(buffer, dispatch) {
  * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetMagnitudes
  * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetPhases
  */
-function updateAcMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetPhases) {
+function updateAcProbeMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetPhases) {
   const mags = []
   for (let i = 0; i < 120; i++) {
     mags.push(buffer.readFloatBE(i * 4))
@@ -473,5 +473,32 @@ function updateAcMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetP
   for (let i = 0; i < 120; i++) {
     phases.push(buffer.readFloatBE(120 * 4 + i * 4))
   }
+  dispatchSetPhases(phases)
+}
+
+/**
+ *
+ * @param {Buffer} buffer
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetMagnitudes
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetPhases
+ */
+function updateAcCmuMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetPhases) {
+  const mags = []
+  const phases = []
+
+  for (let i = 0; i < 24; i++) {
+    const channelMags = []
+    const channelPhases = []
+
+    for (let j = 0; j < 120; j++) {
+      channelMags.push(buffer.readFloatBE(480 * i * 2 + j * 4))
+      channelPhases.push(buffer.readFloatBE(480 * (i * 2 + 1) + j * 4))
+    }
+
+    mags.push(channelMags)
+    phases.push(channelPhases)
+  }
+
+  dispatchSetMagnitudes(mags)
   dispatchSetPhases(phases)
 }

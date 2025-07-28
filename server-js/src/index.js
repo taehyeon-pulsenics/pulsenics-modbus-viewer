@@ -58,11 +58,17 @@ app.post('/config', async (req, res) => {
   res.sendStatus(204);
 });
 app.post('/modbus-data', async (req, res) => {
-  for (const actor of Object.values(actors)) {
-    actor.send({ type: 'RETRIEVE' });
-  }
+  try {
+    for (const actor of Object.values(actors)) {
+      actor.send({ type: 'RETRIEVE' });
+    }
 
-  res.sendStatus(204);
+    io.emit('connection', true);
+    res.sendStatus(204);
+  } catch {
+    io.emit('connection', false);
+    res.sendStatus(500);
+  }
 });
 
 io.on('connection', (socket) => {

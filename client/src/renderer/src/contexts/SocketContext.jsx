@@ -415,13 +415,18 @@ export function SocketProvider({ children }) {
     axios.post('http://localhost:3000/config', config)
   }
 
+  const triggerDataBroadcast = () => {
+    axios.post('http://localhost:3000/modbus-data')
+  }
+
   // Provide both the socket instance and the latest received data
   return (
     <SocketContext.Provider
       value={{
         socket,
         config,
-        changeConfig
+        changeConfig,
+        triggerDataBroadcast
       }}
     >
       {children}

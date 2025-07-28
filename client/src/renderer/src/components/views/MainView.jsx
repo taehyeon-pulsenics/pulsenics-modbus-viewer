@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { Layout, Tabs, theme, Button, Affix, Alert, Typography } from 'antd'
 import StickyBox from 'react-sticky-box'
 import { useSocket } from '../../contexts/SocketContext'
@@ -26,7 +26,7 @@ const items = [
 ]
 
 const MainView = () => {
-  const { config } = useSocket()
+  const { config, triggerDataBroadcast } = useSocket()
   const {
     token: { colorBgContainer }
   } = theme.useToken()
@@ -34,6 +34,11 @@ const MainView = () => {
   const { modbusConnected } = useContext(ModbusConnectionContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
+
+  // retrieve modbus state on initial load of main view
+  useEffect(() => {
+    triggerDataBroadcast()
+  }, [triggerDataBroadcast])
 
   /**
    * Modal Control Functions

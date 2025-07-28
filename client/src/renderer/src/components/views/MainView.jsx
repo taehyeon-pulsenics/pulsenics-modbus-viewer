@@ -6,15 +6,14 @@ import DCDataView from './DCDataView'
 import ProbeStatusView from './ProbeStatusView'
 import ACDataView from './ACDataView'
 import ErrorSignalsView from './ErrorSignalsView'
-import MiscView from './MiscView'
 import ModbusConErrorView from './ModbusConErrorView'
 import SettingModal from '../modals/SettingModal'
 import { Settings2 } from 'lucide-react'
 import { blue } from '@ant-design/colors'
 
 import './MainView.css'
-import { ModbusContext } from '../../contexts/ModbusContext'
 import FocusedView from './FocusedView'
+import { ModbusConnectionContext } from '../../contexts/modbus'
 
 const { Header, Content } = Layout
 
@@ -23,8 +22,7 @@ const items = [
   { key: '1', label: 'Probe Status', children: <ProbeStatusView /> },
   { key: '2', label: 'DC Data', children: <DCDataView /> },
   { key: '3', label: 'AC Data', children: <ACDataView /> },
-  { key: '4', label: 'Error Signals', children: <ErrorSignalsView /> },
-  { key: '5', label: 'Misc', children: <MiscView /> }
+  { key: '4', label: 'Error Signals', children: <ErrorSignalsView /> }
 ]
 
 const MainView = () => {
@@ -33,7 +31,7 @@ const MainView = () => {
     token: { colorBgContainer }
   } = theme.useToken()
 
-  const { modbusConnected } = useContext(ModbusContext)
+  const { modbusConnected } = useContext(ModbusConnectionContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
 

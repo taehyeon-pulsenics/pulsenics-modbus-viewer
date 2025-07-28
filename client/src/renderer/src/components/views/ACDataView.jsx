@@ -1,5 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { ModbusContext } from '../../contexts/ModbusContext'
+import {
+  AcCurrentContext,
+  AcFrequencyContext,
+  AcProbeVoltageContext,
+  AcCmuVoltageContext
+} from '../../contexts/modbus'
 import { Button, Space } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
 import CMUACDataModal from '../modals/CMUACDataModal'
@@ -9,22 +14,19 @@ import CollapsibleCard from '../cards/CollapsibleCard'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 
 const ACDataView = () => {
+  const { acCurrentMagnitude, acCurrentPhase } = useContext(AcCurrentContext)
+  const { freqs } = useContext(AcFrequencyContext)
+  const { acProbeVoltageMagnitude, acProbeVoltagePhase } = useContext(AcProbeVoltageContext)
   const {
-    freqs,
-    currMag,
-    currPha,
-    probeVoltageMag,
-    probeVoltagePha,
-    cmu1VoltageMag,
-    cmu1VoltagePha,
-    cmu2VoltageMag,
-    cmu2VoltagePha,
-    cmu3VoltageMag,
-    cmu3VoltagePha,
-    cmu4VoltageMag,
-    cmu4VoltagePha,
-    connectedCmus
-  } = useContext(ModbusContext)
+    acCmu1VoltageMagnitude,
+    acCmu1VoltagePhase,
+    acCmu2VoltageMagnitude,
+    acCmu2VoltagePhase,
+    acCmu3VoltageMagnitude,
+    acCmu3VoltagePhase,
+    acCmu4VoltageMagnitude,
+    acCmu4VoltagePhase
+  } = useContext(AcCmuVoltageContext)
 
   const [selectedCMU, setSelectedCMU] = useState(null)
 
@@ -41,13 +43,13 @@ const ACDataView = () => {
   const getCorrectVoltageMag = (cmuNumber) => {
     switch (cmuNumber) {
       case 1:
-        return cmu1VoltageMag
+        return acCmu1VoltageMagnitude
       case 2:
-        return cmu2VoltageMag
+        return acCmu2VoltageMagnitude
       case 3:
-        return cmu3VoltageMag
+        return acCmu3VoltageMagnitude
       case 4:
-        return cmu4VoltageMag
+        return acCmu4VoltageMagnitude
     }
 
     return null
@@ -55,13 +57,13 @@ const ACDataView = () => {
   const getCorrectVoltagePha = (cmuNumber) => {
     switch (cmuNumber) {
       case 1:
-        return cmu1VoltagePha
+        return acCmu1VoltagePhase
       case 2:
-        return cmu2VoltagePha
+        return acCmu2VoltagePhase
       case 3:
-        return cmu3VoltagePha
+        return acCmu3VoltagePhase
       case 4:
-        return cmu4VoltagePha
+        return acCmu4VoltagePhase
     }
 
     return null
@@ -89,32 +91,32 @@ const ACDataView = () => {
       />
       <ACPlotView
         frequencies={freqs}
-        currMags={currMag}
-        currPhases={currPha}
-        volMagsList={[probeVoltageMag]}
-        volPhasesList={[probeVoltagePha]}
+        currMags={acCurrentMagnitude}
+        currPhases={acCurrentPhase}
+        volMagsList={[acProbeVoltageMagnitude]}
+        volPhasesList={[acProbeVoltagePhase]}
       />
       <CollapsibleCard size="small" title="Frequencies" initiallyCollapsed>
         <NumberTable numbers={freqs} />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Current Magnitude" initiallyCollapsed>
-        <NumberTable numbers={currMag} />
+        <NumberTable numbers={acCurrentMagnitude} />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Current Phase" initiallyCollapsed>
-        <NumberTable numbers={currPha} />
+        <NumberTable numbers={acCurrentPhase} />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Probe Voltage Magnitude" initiallyCollapsed>
-        <NumberTable numbers={probeVoltageMag} />
+        <NumberTable numbers={acProbeVoltageMagnitude} />
       </CollapsibleCard>
       <CollapsibleCard size="small" title="Probe Voltage Phase" initiallyCollapsed>
-        <NumberTable numbers={probeVoltagePha} />
+        <NumberTable numbers={acProbeVoltagePhase} />
       </CollapsibleCard>
       {freqs && (
         <CMUACDataModal
           title={`CMU ${selectedCMU} Voltage Reading`}
           frequencies={freqs}
-          currentMags={currMag}
-          currentPhases={currPha}
+          currentMags={acCurrentMagnitude}
+          currentPhases={acCurrentPhase}
           voltageMags={getCorrectVoltageMag(selectedCMU)}
           voltagePhases={getCorrectVoltagePha(selectedCMU)}
           open={isModalOpen}

@@ -1,14 +1,32 @@
 import { useContext, useState } from 'react'
-import { ModbusContext } from '../../contexts/ModbusContext'
 import { Button, Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { CloudOff, Search } from 'lucide-react'
-import CMUTable from '../tables/CMUTable'
 import CMUDCDataModal from '../modals/CMUDCDataModal'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
+import { DcCmuVoltageContext, DcCurrentContext, DcProbeVoltageContext } from '../../contexts/modbus'
 
 const DCDataView = () => {
-  const { dcVoltage, dcCurrent, cmuVoltages, connectedCmus } = useContext(ModbusContext)
+  const { dcCurrent } = useContext(DcCurrentContext)
+  const { dcProbeVoltage } = useContext(DcProbeVoltageContext)
+  const {
+    dcCmu1Voltage,
+    dcCmu2Voltage,
+    dcCmu3Voltage,
+    dcCmu4Voltage,
+    dcCmu5Voltage,
+    dcCmu6Voltage,
+    dcCmu7Voltage,
+    dcCmu8Voltage,
+    dcCmu9Voltage,
+    dcCmu10Voltage,
+    dcCmu11Voltage,
+    dcCmu12Voltage,
+    dcCmu13Voltage,
+    dcCmu14Voltage,
+    dcCmu15Voltage,
+    dcCmu16Voltage
+  } = useContext(DcCmuVoltageContext)
   const [selectedCMU, setSelectedCMU] = useState(null)
 
   /**
@@ -21,10 +39,24 @@ const DCDataView = () => {
     setSelectedCMU(null)
   }
   const isModalOpen = selectedCMU !== null
-  const voltagesForModal =
-    selectedCMU != null
-      ? cmuVoltages.slice((selectedCMU - 1) * 24, (selectedCMU - 1) * 24 + 24)
-      : []
+  const voltagesForModal = [
+    dcCmu1Voltage,
+    dcCmu2Voltage,
+    dcCmu3Voltage,
+    dcCmu4Voltage,
+    dcCmu5Voltage,
+    dcCmu6Voltage,
+    dcCmu7Voltage,
+    dcCmu8Voltage,
+    dcCmu9Voltage,
+    dcCmu10Voltage,
+    dcCmu11Voltage,
+    dcCmu12Voltage,
+    dcCmu13Voltage,
+    dcCmu14Voltage,
+    dcCmu15Voltage,
+    dcCmu16Voltage
+  ][selectedCMU - 1]
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
@@ -38,7 +70,7 @@ const DCDataView = () => {
         }}
       >
         <p>Current: {dcCurrent}A</p>
-        <p>Voltage: {dcVoltage}V</p>
+        <p>Voltage: {dcProbeVoltage}V</p>
       </CollapsibleCard>
       <CMUConnectionGridView
         render={(value) =>

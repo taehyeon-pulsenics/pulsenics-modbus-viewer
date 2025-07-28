@@ -1,34 +1,21 @@
 import { useContext } from 'react'
-import { ModbusContext } from '../../contexts/ModbusContext'
-import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
-import { List, Space, Table, Typography } from 'antd'
+import { Cloud, CloudOff } from 'lucide-react'
+import { Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 import BooleanList from '../lists/BooleanList'
 import ProbeStatusSubview from '../subviews/ProbeStatusView'
+import {
+  SampleCoilsContext,
+  SampleControlsContext,
+  SampleMetadataContext
+} from '../../contexts/modbus'
 
 const ProbeStatusView = () => {
-  const {
-    updateDCSamplingRateCoil,
-    newDcSamplingRate,
-    sampleModeCoil,
-    startEISCoil,
-    interruptCoil,
-    sampleStarted,
-    sampleCompleted,
-    sampleReceived,
-    sampleFailed,
-    minFreq,
-    maxFreq,
-    amp,
-    nTotalFreqs,
-    nSimulFreqs,
-    dutId,
-    triggerId,
-    experimentId,
-    metadata
-  } = useContext(ModbusContext)
+  const { sampleModeCoil, startEISCoil, interruptCoil } = useContext(SampleCoilsContext)
+  const { minFreq, maxFreq, amp, nTotalFreqs, nSimulFreqs } = useContext(SampleControlsContext)
+  const { dutId, triggerId, experimentId, metadata } = useContext(SampleMetadataContext)
   const { config } = useSocket()
 
   return (
@@ -42,14 +29,6 @@ const ProbeStatusView = () => {
           )
         }
       />
-      <CollapsibleCard size="small" title="DC Coil">
-        <BooleanList
-          dataSource={[{ title: 'Update DC Sample Rate', data: updateDCSamplingRateCoil }]}
-        />
-      </CollapsibleCard>
-      <CollapsibleCard size="small" title="DC Sampling Rate">
-        {newDcSamplingRate} /s
-      </CollapsibleCard>
       <CollapsibleCard size="small" title="AC Coil">
         <BooleanList
           dataSource={[

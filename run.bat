@@ -1,5 +1,19 @@
 @echo off
 
+:: ─── Prevent multiple instances ──────────────────────────────
+set EXE_NAME=pulsenics-modbus-viewer-app.exe
+
+:: look in the task list for any running copies of your exe
+tasklist /FI "IMAGENAME eq %EXE_NAME%" /NH | find /I "%EXE_NAME%" >nul
+if not errorlevel 1 (
+  echo.
+  echo ==> %EXE_NAME% is already running.  Exiting.
+  echo.
+  pause
+  exit /B 1
+)
+:: ──────────────────────────────────────────────────────────────
+
 :: BatchGotAdmin
 :-------------------------------------
 REM  --> Check for permissions

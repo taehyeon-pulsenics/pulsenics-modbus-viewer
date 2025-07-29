@@ -1,23 +1,14 @@
 import { useContext } from 'react'
-import { ModbusContext } from '../../contexts/ModbusContext'
 import { useSocket } from '../../contexts/SocketContext'
 import { Col, Row, Space, Typography } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import FaultPanelView from '../subviews/FaultPanelView'
-import { CircleCheck, CircleX, Cloud, CloudOff } from 'lucide-react'
-import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 import ProbeStatusView from '../subviews/ProbeStatusView'
+import { ClientMessageContext, ProbeInformationContext } from '../../contexts/modbus'
 
 const FocusedView = () => {
-  const {
-    sampleStarted,
-    sampleCompleted,
-    sampleReceived,
-    sampleFailed,
-    probeSn,
-    modbusVersion,
-    clientMsg
-  } = useContext(ModbusContext)
+  const { probeSn, modbusVersion } = useContext(ProbeInformationContext)
+  const { clientMsg } = useContext(ClientMessageContext)
   const { config } = useSocket()
 
   return (

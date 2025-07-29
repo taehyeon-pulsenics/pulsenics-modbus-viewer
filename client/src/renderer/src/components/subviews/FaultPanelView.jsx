@@ -1,5 +1,5 @@
 import { Row, Col } from 'antd'
-import { ModbusContext } from '../../contexts/ModbusContext'
+import { FaultsContext } from '../../contexts/modbus'
 import { useContext } from 'react'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import FaultList from '../lists/FaultList'
@@ -20,8 +20,11 @@ const FaultPanelView = () => {
     eStopPreventingSample,
     dutForcedDisconnectModePreventingSample,
     fullDisconnectModePreventingSample,
-    lowerPowerModePreventingSample
-  } = useContext(ModbusContext)
+    lowerPowerModePreventingSample,
+    eisEnableSwitchOffPreventingSample,
+    reversePolarityDetected,
+    inputOverloadDetected
+  } = useContext(FaultsContext)
 
   const signals = [
     {

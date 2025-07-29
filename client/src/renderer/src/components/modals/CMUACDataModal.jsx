@@ -44,7 +44,7 @@ const CMUACDataModal = ({
             {Array(24)
               .fill(null)
               .map((_, index) => (
-                <Col className="gutter-row" span={4}>
+                <Col key={`ac_graph_view_${index}`} className="gutter-row" span={4}>
                   <Checkbox onChange={(e) => handleCheckboxChange(index, e.target.checked)}>
                     Channel: {index + 1}
                   </Checkbox>
@@ -68,7 +68,11 @@ const CMUACDataModal = ({
             Array(24)
               .fill(null)
               .map((_, index) => (
-                <CollapsibleCard title={`Channel ${index + 1}`} initiallyCollapsed>
+                <CollapsibleCard
+                  key={`ac_table_view_${index}`}
+                  title={`Channel ${index + 1}`}
+                  initiallyCollapsed
+                >
                   <CollapsibleCard title="Voltage Mag" initiallyCollapsed>
                     <NumberTable numbers={voltageMags[index]} />
                   </CollapsibleCard>

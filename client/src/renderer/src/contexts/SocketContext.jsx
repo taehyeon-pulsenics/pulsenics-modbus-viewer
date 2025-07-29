@@ -1,7 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import io from 'socket.io-client'
 import { Buffer } from 'buffer'
-import { ModbusContext } from './ModbusContext'
+import {
+  ConnectedCmusContext,
+  FaultsContext,
+  AcCurrentContext,
+  DcCurrentContext,
+  SampleCoilsContext,
+  AcFrequencyContext,
+  AcCmuVoltageContext,
+  DcCmuVoltageContext,
+  SampleStatusContext,
+  ClientMessageContext,
+  SampleControlsContext,
+  AcProbeVoltageContext,
+  DcProbeVoltageContext,
+  SampleMetadataContext,
+  ModbusConnectionContext,
+  ProbeInformationContext
+} from './modbus'
+import { MODBUS_STATE } from '../constants/modbus'
 import axios from 'axios'
 
 // Create a context
@@ -15,47 +33,53 @@ export function SocketProvider({ children }) {
     legacy: false
   })
 
-  // Use modbus context
+  // dc
+  const { setDcCurrent } = useContext(DcCurrentContext)
+  const { setDcProbeVoltage } = useContext(DcProbeVoltageContext)
   const {
-    modbusConnected,
-    setModbusConnected,
-    setUpdateDCSamplingRateCoil,
-    setNewDCSamplingRate,
-    setDcSampleTime,
-    setDcVoltage,
-    setDcCurrent,
-    setCmuVoltages,
-    setSampleModeCoil,
-    setStartEISCoil,
-    setInterruptCoil,
-    setMinFreq,
-    setMaxFreq,
-    setAmp,
-    setNTotalFreqs,
-    setNSimulFreqs,
-    setDutId,
-    setTriggerId,
-    setExperimentId,
-    setMetadata,
-    setSampleStarted,
-    setSampleCompleted,
-    setConnectedCmus,
-    setSampleReceived,
-    setSampleFailed,
-    setAcSampleTime,
-    setFreqs,
-    setCurrMag,
-    setcurrPha,
-    setProbeVoltageMag,
-    setProbeVoltagePha,
-    setCmu1VoltageMag,
-    setCmu1VoltagePha,
-    setCmu2VoltageMag,
-    setCmu2VoltagePha,
-    setCmu3VoltageMag,
-    setCmu3VoltagePha,
-    setCmu4VoltageMag,
-    setCmu4VoltagePha,
+    setDcCmu1Voltage,
+    setDcCmu2Voltage,
+    setDcCmu3Voltage,
+    setDcCmu4Voltage,
+    setDcCmu5Voltage,
+    setDcCmu6Voltage,
+    setDcCmu7Voltage,
+    setDcCmu8Voltage,
+    setDcCmu9Voltage,
+    setDcCmu10Voltage,
+    setDcCmu11Voltage,
+    setDcCmu12Voltage,
+    setDcCmu13Voltage,
+    setDcCmu14Voltage,
+    setDcCmu15Voltage,
+    setDcCmu16Voltage
+  } = useContext(DcCmuVoltageContext)
+
+  // ac
+  const { setFreqs } = useContext(AcFrequencyContext)
+  const { setAcCurrentMagnitude, setAcCurrentPhase } = useContext(AcCurrentContext)
+  const { setAcProbeVoltageMagnitude, setAcProbeVoltagePhase } = useContext(AcProbeVoltageContext)
+  const {
+    setAcCmu1VoltageMagnitude,
+    setAcCmu1VoltagePhase,
+    setAcCmu2VoltageMagnitude,
+    setAcCmu2VoltagePhase,
+    setAcCmu3VoltageMagnitude,
+    setAcCmu3VoltagePhase,
+    setAcCmu4VoltageMagnitude,
+    setAcCmu4VoltagePhase
+  } = useContext(AcCmuVoltageContext)
+  const { setSampleModeCoil, setStartEISCoil, setInterruptCoil } = useContext(SampleCoilsContext)
+  const { setMinFreq, setMaxFreq, setAmp, setNTotalFreqs, setNSimulFreqs } =
+    useContext(SampleControlsContext)
+  const { setDutId, setTriggerId, setExperimentId, setMetadata } = useContext(SampleMetadataContext)
+  const { setSampleStarted, setSampleCompleted, setSampleReceived, setSampleFailed } =
+    useContext(SampleStatusContext)
+  const { setConnectedCmus } = useContext(ConnectedCmusContext)
+
+  // misc
+  const { setClientMsg } = useContext(ClientMessageContext)
+  const {
     setCriticalFault,
     setGeneralFault,
     setDutOvervoltageFault,
@@ -71,15 +95,12 @@ export function SocketProvider({ children }) {
     setDutForcedDisconnectModePreventingSample,
     setFullDisconnectModePreventingSample,
     setLowerPowerModePreventingSample,
-    setPowerLimit,
-    setCurrentLimit,
-    setDutOvervoltageLimit,
-    setDutUndervoltageLimit,
-    setVoltageDeviationLimit,
-    setProbeSn,
-    setModbusVersion,
-    setClientMsg
-  } = useContext(ModbusContext)
+    setEisEnableSwitchOffPreventingSample,
+    setReversePolarityDetected,
+    setInputOverloadDetected
+  } = useContext(FaultsContext)
+  const { setProbeSn, setModbusVersion } = useContext(ProbeInformationContext)
+  const { setModbusConnected } = useContext(ModbusConnectionContext)
 
   /**
    * Helper function to fetch config from server
@@ -112,51 +133,68 @@ export function SocketProvider({ children }) {
       setModbusConnected((v) => (v === data ? v : !v))
     })
 
-    // socket message handler
-    socketInstance.on('1_1', (data) => {
-      if (data === 'null') {
-        return
-      }
-
-      const registers = new Uint16Array(data)
-
-      setUpdateDCSamplingRateCoil(!!registers[0])
-    })
-
-    socketInstance.on('1_3', (data) => {
-      if (data === 'null') {
-        return
-      }
-
+    socketInstance.on(MODBUS_STATE.DC.CURRENT, (data) => {
       const buffer = Buffer.from(data)
 
-      setNewDCSamplingRate(buffer.readFloatBE(0))
+      setDcCurrent(buffer.readFloatBE(0))
     })
 
-    socketInstance.on('1_4', (data) => {
-      if (data === 'null') {
-        return
-      }
-
+    socketInstance.on(MODBUS_STATE.DC.PROBE_VOLTAGE, (data) => {
       const buffer = Buffer.from(data)
 
-      setDcSampleTime(buffer.readDoubleBE(0))
-      setDcVoltage(buffer.readFloatBE(8))
-      setDcCurrent(buffer.readFloatBE(12))
-
-      const cmuVoltages = []
-      for (let i = 0; i < 96 * 4; i++) {
-        cmuVoltages.push(buffer.readFloatBE(16 + i * 4))
-      }
-
-      setCmuVoltages(cmuVoltages)
+      setDcProbeVoltage(buffer.readFloatBE(0))
     })
 
-    socketInstance.on('2_1', (data) => {
-      if (data === 'null') {
-        return
-      }
+    socketInstance.on(MODBUS_STATE.DC.CMU_1_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu1Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_2_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu2Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_3_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu3Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_4_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu4Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_5_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu5Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_6_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu6Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_7_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu7Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_8_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu8Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_9_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu9Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_10_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu10Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_11_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu11Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_12_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu12Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_13_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu13Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_14_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu14Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_15_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu15Voltage)
+    })
+    socketInstance.on(MODBUS_STATE.DC.CMU_16_VOLTAGE, (data) => {
+      updateDcCmuVoltage(Buffer.from(data), setDcCmu16Voltage)
+    })
 
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_COILS, (data) => {
       const registers = new Uint16Array(data)
 
       setSampleModeCoil(!!registers[0])
@@ -164,28 +202,24 @@ export function SocketProvider({ children }) {
       setInterruptCoil(!!registers[2])
     })
 
-    socketInstance.on('2_2', (data) => {
-      if (data === 'null') {
-        return
-      }
-
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_STATUS, (data) => {
       const registers = new Uint16Array(data)
 
       setSampleStarted(!!registers[0])
       setSampleCompleted(!!registers[1])
-      setSampleReceived(!!registers[18])
+      setSampleReceived(!!registers[2])
       if (!config.legacy) {
-        setSampleFailed(!!registers[19])
+        setSampleFailed(!!registers[3])
       }
-
-      setConnectedCmus(Array.from(registers.slice(2, 18), (v) => Boolean(v)))
     })
 
-    socketInstance.on('2_3', (data) => {
-      if (data === 'null') {
-        return
-      }
+    socketInstance.on(MODBUS_STATE.AC.CONNECTED_CMUS, (data) => {
+      const registers = new Uint16Array(data)
 
+      setConnectedCmus(Array.from(registers, (v) => Boolean(v)))
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_CONTROLS, (data) => {
       const buffer = Buffer.from(data)
 
       setMinFreq(buffer.readFloatBE(0))
@@ -193,144 +227,91 @@ export function SocketProvider({ children }) {
       setAmp(buffer.readFloatBE(8))
       setNTotalFreqs(buffer.readFloatBE(12))
       setNSimulFreqs(buffer.readFloatBE(16))
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.SAMPLE_METADATA, (data) => {
+      const buffer = Buffer.from(data)
 
       if (!config.legacy) {
-        const dutIdLen = buffer.readUInt16BE(200)
+        const dutIdLen = buffer.readUInt16BE(0)
         if (dutIdLen > 0) {
-          setDutId(buffer.subarray(202, 264).toString('utf-8').substring(0, dutIdLen))
+          setDutId(buffer.subarray(2, 66).toString('utf-8').substring(0, dutIdLen))
+        } else {
+          setDutId('')
         }
 
-        const triggerIdLen = buffer.readUInt16BE(266)
+        const triggerIdLen = buffer.readUInt16BE(66)
         if (triggerIdLen > 0) {
-          setTriggerId(buffer.subarray(268, 330).toString('utf-8').substring(0, triggerIdLen))
+          setTriggerId(buffer.subarray(68, 132).toString('utf-8').substring(0, triggerIdLen))
         }
 
-        const experimentIdLen = buffer.readUInt16BE(332)
+        const experimentIdLen = buffer.readUInt16BE(132)
         if (experimentIdLen > 0) {
-          setExperimentId(buffer.subarray(334, 396).toString('utf-8').substring(0, experimentIdLen))
+          setExperimentId(buffer.subarray(134, 198).toString('utf-8').substring(0, experimentIdLen))
         }
 
-        const metadataLen = buffer.readUInt16BE(398)
+        const metadataLen = buffer.readUInt16BE(198)
         if (metadataLen > 0) {
-          setMetadata(buffer.subarray(400, 462).toString('utf-8').substring(0, metadataLen))
+          setMetadata(buffer.subarray(200, 264).toString('utf-8').substring(0, metadataLen))
         }
       }
     })
 
-    socketInstance.on('2_4', (data) => {
-      if (data === 'null') {
-        return
-      }
-
+    socketInstance.on(MODBUS_STATE.AC.FREQUENCIES, (data) => {
       const buffer = Buffer.from(data)
-
-      setAcSampleTime(buffer.readDoubleBE(0))
 
       const freqs = []
       for (let i = 0; i < 120; i++) {
-        freqs.push(buffer.readFloatBE(8 + i * 4))
+        freqs.push(buffer.readFloatBE(i * 4))
       }
       setFreqs(freqs)
-
-      const currentMags = []
-      for (let i = 0; i < 120; i++) {
-        currentMags.push(buffer.readFloatBE(8 + 480 + i * 4))
-      }
-      setCurrMag(currentMags)
-
-      const currentPhases = []
-      for (let i = 0; i < 120; i++) {
-        currentPhases.push(buffer.readFloatBE(8 + 480 * 2 + i * 4))
-      }
-      setcurrPha(currentPhases)
-
-      const probeVoltageMags = []
-      for (let i = 0; i < 120; i++) {
-        probeVoltageMags.push(buffer.readFloatBE(8 + 480 * 3 + i * 4))
-      }
-      setProbeVoltageMag(probeVoltageMags)
-
-      const probeVoltagePhases = []
-      for (let i = 0; i < 120; i++) {
-        probeVoltagePhases.push(buffer.readFloatBE(8 + 480 * 4 + i * 4))
-      }
-      setProbeVoltagePha(probeVoltagePhases)
-
-      // set cmu 1-4 data
-      const cmu1VoltageMags = []
-      const cmu1VoltagePhases = []
-      for (let i = 0; i < 24; i++) {
-        const channelVoltageMags = []
-        const channelVoltagePhases = []
-
-        for (let j = 0; j < 120; j++) {
-          channelVoltageMags.push(buffer.readFloatBE(2408 + 480 * i * 2 + j * 4))
-          channelVoltagePhases.push(buffer.readFloatBE(2888 + 480 * i * 2 + j * 4))
-        }
-
-        cmu1VoltageMags.push(channelVoltageMags)
-        cmu1VoltagePhases.push(channelVoltagePhases)
-      }
-      setCmu1VoltageMag(cmu1VoltageMags)
-      setCmu1VoltagePha(cmu1VoltagePhases)
-
-      const cmu2VoltageMags = []
-      const cmu2VoltagePhases = []
-      for (let i = 0; i < 24; i++) {
-        const channelVoltageMags = []
-        const channelVoltagePhases = []
-
-        for (let j = 0; j < 120; j++) {
-          channelVoltageMags.push(buffer.readFloatBE(25448 + 480 * i * 2 + j * 4))
-          channelVoltagePhases.push(buffer.readFloatBE(25928 + 480 * i * 2 + j * 4))
-        }
-
-        cmu2VoltageMags.push(channelVoltageMags)
-        cmu2VoltagePhases.push(channelVoltagePhases)
-      }
-      setCmu2VoltageMag(cmu2VoltageMags)
-      setCmu2VoltagePha(cmu2VoltagePhases)
-
-      const cmu3VoltageMags = []
-      const cmu3VoltagePhases = []
-      for (let i = 0; i < 24; i++) {
-        const channelVoltageMags = []
-        const channelVoltagePhases = []
-
-        for (let j = 0; j < 120; j++) {
-          channelVoltageMags.push(buffer.readFloatBE(48488 + 480 * i * 2 + j * 4))
-          channelVoltagePhases.push(buffer.readFloatBE(48968 + 480 * i * 2 + j * 4))
-        }
-
-        cmu3VoltageMags.push(channelVoltageMags)
-        cmu3VoltagePhases.push(channelVoltagePhases)
-      }
-      setCmu3VoltageMag(cmu3VoltageMags)
-      setCmu3VoltagePha(cmu3VoltagePhases)
-
-      const cmu4VoltageMags = []
-      const cmu4VoltagePhases = []
-      for (let i = 0; i < 24; i++) {
-        const channelVoltageMags = []
-        const channelVoltagePhases = []
-
-        for (let j = 0; j < 120; j++) {
-          channelVoltageMags.push(buffer.readFloatBE(71528 + 480 * i * 2 + j * 4))
-          channelVoltagePhases.push(buffer.readFloatBE(72008 + 480 * i * 2 + j * 4))
-        }
-
-        cmu4VoltageMags.push(channelVoltageMags)
-        cmu4VoltagePhases.push(channelVoltagePhases)
-      }
-      setCmu4VoltageMag(cmu4VoltageMags)
-      setCmu4VoltagePha(cmu4VoltagePhases)
     })
 
-    socketInstance.on('6_2', (data) => {
-      if (data === 'null') {
-        return
-      }
+    socketInstance.on(MODBUS_STATE.AC.CURRENT, (data) => {
+      updateAcProbeMagnitudesAndPhases(Buffer.from(data), setAcCurrentMagnitude, setAcCurrentPhase)
+    })
 
+    socketInstance.on(MODBUS_STATE.AC.PROBE_VOLTAGE, (data) => {
+      updateAcProbeMagnitudesAndPhases(
+        Buffer.from(data),
+        setAcProbeVoltageMagnitude,
+        setAcProbeVoltagePhase
+      )
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.CMU_1_VOLTAGE, (data) => {
+      updateAcCmuMagnitudesAndPhases(
+        Buffer.from(data),
+        setAcCmu1VoltageMagnitude,
+        setAcCmu1VoltagePhase
+      )
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.CMU_2_VOLTAGE, (data) => {
+      updateAcCmuMagnitudesAndPhases(
+        Buffer.from(data),
+        setAcCmu2VoltageMagnitude,
+        setAcCmu2VoltagePhase
+      )
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.CMU_3_VOLTAGE, (data) => {
+      updateAcCmuMagnitudesAndPhases(
+        Buffer.from(data),
+        setAcCmu3VoltageMagnitude,
+        setAcCmu3VoltagePhase
+      )
+    })
+
+    socketInstance.on(MODBUS_STATE.AC.CMU_4_VOLTAGE, (data) => {
+      updateAcCmuMagnitudesAndPhases(
+        Buffer.from(data),
+        setAcCmu4VoltageMagnitude,
+        setAcCmu4VoltagePhase
+      )
+    })
+
+    socketInstance.on(MODBUS_STATE.MISC.FAULTS, (data) => {
       const registers = new Uint16Array(data)
 
       setCriticalFault(!!registers[0])
@@ -348,52 +329,82 @@ export function SocketProvider({ children }) {
       setDutForcedDisconnectModePreventingSample(!!registers[12])
       setFullDisconnectModePreventingSample(!!registers[13])
       setLowerPowerModePreventingSample(!!registers[14])
+      setEisEnableSwitchOffPreventingSample(!!registers[15])
+      setReversePolarityDetected(!!registers[16])
+      setInputOverloadDetected(!!registers[17])
     })
 
-    socketInstance.on('6_4', (data) => {
-      if (data === 'null') {
-        return
-      }
-
+    socketInstance.on(MODBUS_STATE.MISC.PROBE_SERIAL_NUMBER, (data) => {
       const buffer = Buffer.from(data)
 
-      setPowerLimit(buffer.readFloatBE(0))
-      setCurrentLimit(buffer.readFloatBE(4))
-      setDutOvervoltageLimit(buffer.readFloatBE(8))
-      setDutUndervoltageLimit(buffer.readFloatBE(12))
-      setVoltageDeviationLimit(buffer.readFloatBE(16))
+      if (!config.legacy) {
+        const probeSnLen = buffer.readUInt16BE(0)
+        if (probeSnLen > 0) {
+          setProbeSn(buffer.subarray(2, 34).toString('utf-8').substring(0, probeSnLen))
+        }
+      }
+    })
+
+    socketInstance.on(MODBUS_STATE.MISC.MODBUS_VERSION_NUMBER, (data) => {
+      const buffer = Buffer.from(data)
 
       if (!config.legacy) {
-        const probeSnLen = buffer.readUInt16BE(200)
-        if (probeSnLen > 0) {
-          setProbeSn(buffer.subarray(202, 232).toString('utf-8').substring(0, probeSnLen))
-        }
-
-        const modbusVersionLen = buffer.readUInt16BE(234)
+        const modbusVersionLen = buffer.readUInt16BE(0)
         if (modbusVersionLen > 0) {
-          setModbusVersion(
-            buffer.subarray(236, 266).toString('utf-8').substring(0, modbusVersionLen)
-          )
+          setModbusVersion(buffer.subarray(2, 34).toString('utf-8').substring(0, modbusVersionLen))
         }
+      }
+    })
 
-        const clientMsgLen = buffer.readUInt16BE(400)
+    socketInstance.on(MODBUS_STATE.MISC.CLIENT_MESSAGE, (data) => {
+      const buffer = Buffer.from(data)
+
+      if (!config.legacy) {
+        const clientMsgLen = buffer.readUInt16BE(0)
         if (clientMsgLen > 0) {
-          setClientMsg(buffer.subarray(402, 648).toString('utf-8').substring(0, clientMsgLen))
+          setClientMsg(buffer.subarray(2, 250).toString('utf-8').substring(0, clientMsgLen))
         }
       }
     })
 
     // Cleanup listeners when the component unmounts
     return () => {
-      socketInstance.off('1_1')
-      socketInstance.off('1_3')
-      socketInstance.off('1_4')
-      socketInstance.off('2_1')
-      socketInstance.off('2_2')
-      socketInstance.off('2_3')
-      socketInstance.off('2_4')
-      socketInstance.off('6_2')
-      socketInstance.off('6_4')
+      socketInstance.off(MODBUS_STATE.DC.CURRENT)
+      socketInstance.off(MODBUS_STATE.DC.PROBE_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_1_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_2_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_3_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_4_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_5_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_6_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_7_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_8_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_9_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_10_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_11_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_12_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_13_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_14_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_15_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.DC.CMU_16_VOLTAGE)
+
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_COILS)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_CONTROLS)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_METADATA)
+      socketInstance.off(MODBUS_STATE.AC.SAMPLE_STATUS)
+      socketInstance.off(MODBUS_STATE.AC.CONNECTED_CMUS)
+      socketInstance.off(MODBUS_STATE.AC.FREQUENCIES)
+      socketInstance.off(MODBUS_STATE.AC.CURRENT)
+      socketInstance.off(MODBUS_STATE.AC.PROBE_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_1_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_2_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_3_VOLTAGE)
+      socketInstance.off(MODBUS_STATE.AC.CMU_4_VOLTAGE)
+
+      socketInstance.off(MODBUS_STATE.MISC.FAULTS)
+      socketInstance.off(MODBUS_STATE.MISC.PROBE_SERIAL_NUMBER)
+      socketInstance.off(MODBUS_STATE.MISC.MODBUS_VERSION_NUMBER)
+      socketInstance.off(MODBUS_STATE.MISC.CLIENT_MESSAGE)
       socketInstance.off('connect')
       socketInstance.disconnect()
     }
@@ -405,13 +416,18 @@ export function SocketProvider({ children }) {
     axios.post('http://localhost:3000/config', config)
   }
 
+  const triggerDataBroadcast = () => {
+    axios.post('http://localhost:3000/modbus-data')
+  }
+
   // Provide both the socket instance and the latest received data
   return (
     <SocketContext.Provider
       value={{
         socket,
         config,
-        changeConfig
+        changeConfig,
+        triggerDataBroadcast
       }}
     >
       {children}
@@ -426,4 +442,64 @@ export function useSocket() {
     throw new Error('useSocket must be used within a SocketProvider')
   }
   return context
+}
+
+/**
+ *
+ * @param {Buffer} buffer
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatch
+ */
+function updateDcCmuVoltage(buffer, dispatch) {
+  const cmuVoltages = []
+  for (let i = 0; i < 24; i++) {
+    cmuVoltages.push(buffer.readFloatBE(i * 4))
+  }
+  dispatch(cmuVoltages)
+}
+
+/**
+ *
+ * @param {Buffer} buffer
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetMagnitudes
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetPhases
+ */
+function updateAcProbeMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetPhases) {
+  const mags = []
+  for (let i = 0; i < 120; i++) {
+    mags.push(buffer.readFloatBE(i * 4))
+  }
+  dispatchSetMagnitudes(mags)
+
+  const phases = []
+  for (let i = 0; i < 120; i++) {
+    phases.push(buffer.readFloatBE(120 * 4 + i * 4))
+  }
+  dispatchSetPhases(phases)
+}
+
+/**
+ *
+ * @param {Buffer} buffer
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetMagnitudes
+ * @param {React.Dispatch<React.SetStateAction<number[]>>} dispatchSetPhases
+ */
+function updateAcCmuMagnitudesAndPhases(buffer, dispatchSetMagnitudes, dispatchSetPhases) {
+  const mags = []
+  const phases = []
+
+  for (let i = 0; i < 24; i++) {
+    const channelMags = []
+    const channelPhases = []
+
+    for (let j = 0; j < 120; j++) {
+      channelMags.push(buffer.readFloatBE(480 * i * 2 + j * 4))
+      channelPhases.push(buffer.readFloatBE(480 * (i * 2 + 1) + j * 4))
+    }
+
+    mags.push(channelMags)
+    phases.push(channelPhases)
+  }
+
+  dispatchSetMagnitudes(mags)
+  dispatchSetPhases(phases)
 }

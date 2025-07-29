@@ -1,11 +1,12 @@
 import { useContext } from 'react'
-import { ModbusContext } from '../../contexts/ModbusContext'
+import { SampleStatusContext } from '../../contexts/modbus'
 import { useSocket } from '../../contexts/SocketContext'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import BooleanList from '../lists/BooleanList'
 
 const ProbeStatusView = () => {
-  const { sampleStarted, sampleCompleted, sampleReceived, sampleFailed } = useContext(ModbusContext)
+  const { sampleStarted, sampleCompleted, sampleReceived, sampleFailed } =
+    useContext(SampleStatusContext)
   const { config } = useSocket()
 
   return (

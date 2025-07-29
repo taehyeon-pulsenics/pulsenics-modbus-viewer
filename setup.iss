@@ -77,6 +77,8 @@ Filename: "{app}\stop.bat"; Flags: runhidden; RunOnceId: "StopAllProcesses"
 Filename: "{app}\uninstall.bat"; Flags: runhidden; RunOnceId: "RemoveServices"
 
 [Code]
+const
+  MyMutexName = 'Global\{#MyAppId}\InstallerMutex';
 var
   IsUpgrade: Boolean;
   ShouldRunExecuteUninstall: Boolean;
@@ -134,6 +136,19 @@ begin
   begin
     // Now it's safe to use {app} as it has been initialized
     ExecuteUninstall;
+  end;
+end;
+
+function InitializeSetup(): Boolean;
+var
+  hMutex: THandle;
+begin
+  Result := True;
+  hMutex := CreateMutex(MyMutexName);
+  if (hMutex = 0) or (GetLastError = ERROR_ALREADY_EXISTS) then
+  begin
+    MsgBox('Another instance of this installer is already running.', mbError, MB_OK);
+    Result := False;
   end;
 end;
 

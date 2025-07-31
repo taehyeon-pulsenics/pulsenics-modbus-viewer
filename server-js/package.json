@@ -15,6 +15,10 @@
     "targets": [
       "node18-win-x64"
     ],
+    "assets": [
+      "../config.json",
+      "../config.example.json"
+    ],
     "outputPath": "dist"
   },
   "author": "Taehyeon Kim",

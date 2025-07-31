@@ -1,9 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
+const isPkg = typeof process.pkg !== 'undefined';
+const baseDir = isPkg
+  ? // On Windows/Linux/Mac, this is the folder containing your .exe
+    path.dirname(process.execPath)
+  : // During dev, this is your src/ folder
+    __dirname;
+
 // Resolve paths relative to this module
-const examplePath = path.resolve(__dirname, '../config.example.json');
-const configPath = path.resolve(__dirname, '../config.json');
+const examplePath = path.resolve(baseDir, '../config.example.json');
+const configPath = path.resolve(baseDir, '../config.json');
 
 // If config.json doesn’t exist yet, copy the example
 if (!fs.existsSync(configPath)) {

@@ -5,7 +5,9 @@ import icon from '../../resources/icon.png?asset'
 
 let mainWindow = null
 let tray = null
-let isQuiting = false
+let isQuitting = false
+
+const lock = app.requestSingleInstanceLock()
 
 function createWindow() {
   // Create the browser window.
@@ -18,38 +20,39 @@ function createWindow() {
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
       sandbox: false
     }
   })
 
   // Minimize to tray on close
   mainWindow.on('close', (event) => {
-    if (!isQuiting) {
+    if (!isQuitting) {
       event.preventDefault()
-      mainWindow?.hide()
+      mainWindow.hide()
     }
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
+    mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
     return { action: 'deny' }
   })
 
   // HMR for renderer in development
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  // Build application menu with File > Exit
+  // Build application menu
   const isMac = process.platform === 'darwin'
   const template = [
-    // { role: 'appMenu' }
     ...(isMac
       ? [
           {
@@ -68,14 +71,12 @@ function createWindow() {
           }
         ]
       : []),
-    // { role: 'fileMenu' }
     {
       label: 'File',
       submenu: [
         {
           label: 'Check for Update',
           click: () => {
-            // Logic for checking for updates goes here
             // checkForUpdates();
           }
         },
@@ -83,7 +84,7 @@ function createWindow() {
         {
           label: 'Exit',
           click: () => {
-            isQuiting = true
+            isQuitting = true
             app.quit()
           }
         }
@@ -112,7 +113,6 @@ function createWindow() {
           : [{ role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }])
       ]
     },
-    // { role: 'viewMenu' }
     {
       label: 'View',
       submenu: [
@@ -127,7 +127,6 @@ function createWindow() {
         { role: 'togglefullscreen' }
       ]
     },
-    // { role: 'windowMenu' }
     {
       label: 'Window',
       submenu: [
@@ -143,14 +142,11 @@ function createWindow() {
       submenu: [
         {
           label: 'Learn More',
-          click: async () => {
-            const { shell } = require('electron')
-            await shell.openExternal('https://electronjs.org')
-          }
+          click: () => shell.openExternal('https://electronjs.org')
         },
         { type: 'separator' },
         {
-          label: `App Version`,
+          label: 'App Version',
           sublabel: app.getVersion()
         }
       ]
@@ -161,7 +157,6 @@ function createWindow() {
 }
 
 function createTray() {
-  // Choose icon based on platform
   const trayIcon =
     process.platform === 'win32'
       ? join(__dirname, '../../public/logo.ico')
@@ -171,14 +166,12 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Show App',
-      click: () => {
-        mainWindow?.show()
-      }
+      click: () => mainWindow.show()
     },
     {
       label: 'Quit',
       click: () => {
-        isQuiting = true
+        isQuitting = true
         app.quit()
       }
     }
@@ -187,39 +180,57 @@ function createTray() {
   tray.setToolTip('Pulsenics Modbus Viewer')
   tray.setContextMenu(contextMenu)
 
-  // Restore window on tray icon click
-  tray.on('click', () => {
-    mainWindow?.show()
-  })
+  tray.on('click', () => mainWindow.show())
 }
 
-app.whenReady().then(() => {
-  // Set app user model id for Windows
-  electronApp.setAppUserModelId('com.electron')
+if (!lock) {
+  isQuitting = true
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return
 
-  // Enable shortcuts in development
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+    // 1) If the window was minimized, restore it
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    }
+
+    // 2) If the window was hidden (not visible), show it
+    if (!mainWindow.isVisible()) {
+      mainWindow.show()
+    }
+
+    // 3) Finally, bring it to front/focus
+    mainWindow.focus()
+
+    // (Optional Windows hack if focus still fails:
+    // mainWindow.setAlwaysOnTop(true)
+    // mainWindow.setAlwaysOnTop(false)
+    // )
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  app.whenReady().then(() => {
+    electronApp.setAppUserModelId('com.pulsenics.modbusviewer')
 
-  createWindow()
-  createTray()
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
 
-  app.on('activate', () => {
-    // On macOS, re-create a window when the dock icon is clicked
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    else mainWindow?.show()
+    ipcMain.on('ping', () => console.log('pong'))
+
+    createWindow()
+    createTray()
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+      else mainWindow.show()
+    })
   })
-})
 
-// Quit when all windows are closed, except on macOS
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-// Additional app-specific main process code can go here.
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      isQuitting = true
+      app.quit()
+    }
+  })
+}

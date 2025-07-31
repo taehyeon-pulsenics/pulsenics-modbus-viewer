@@ -46,17 +46,22 @@ Source: "nssm\*"; DestDir: "{app}\nssm"; Flags: ignoreversion recursesubdirs cre
 Source: "server-js\config.example.json"; DestDir: "{app}\server-js"; Flags: ignoreversion
 Source: "server-js\config.json"; DestDir: "{app}\server-js"; Flags: ignoreversion
 ; server code
-Source: "server-js\dist\*"; DestDir: "{app}\server-js\dist"; Excludes: "__pycache__"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "server-js\dist\*"; DestDir: "{app}\server-js\dist"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; client code
 Source: "client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; public
 Source: "public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; main code
 Source: "start.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "run_silently.vbs"; DestDir: "{app}"; Flags: ignoreversion
+Source: "startClient.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "startServer.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "runSilently.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: "run.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\stop.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "checkService.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "stop.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "stopClient.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "stopServer.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
@@ -77,8 +82,6 @@ Filename: "{app}\stop.bat"; Flags: runhidden; RunOnceId: "StopAllProcesses"
 Filename: "{app}\uninstall.bat"; Flags: runhidden; RunOnceId: "RemoveServices"
 
 [Code]
-const
-  MyMutexName = 'Global\{#MyAppId}\InstallerMutex';
 var
   IsUpgrade: Boolean;
   ShouldRunExecuteUninstall: Boolean;
@@ -136,19 +139,6 @@ begin
   begin
     // Now it's safe to use {app} as it has been initialized
     ExecuteUninstall;
-  end;
-end;
-
-function InitializeSetup(): Boolean;
-var
-  hMutex: THandle;
-begin
-  Result := True;
-  hMutex := CreateMutex(MyMutexName);
-  if (hMutex = 0) or (GetLastError = ERROR_ALREADY_EXISTS) then
-  begin
-    MsgBox('Another instance of this installer is already running.', mbError, MB_OK);
-    Result := False;
   end;
 end;
 

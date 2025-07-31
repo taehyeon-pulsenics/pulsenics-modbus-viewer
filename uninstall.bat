@@ -34,7 +34,7 @@ set SERVICE_NAME=PulsenicsModbusViewerServer
 set NSSM_PATH=%~dp0nssm\nssm.exe
 
 :: stop processes
-start cmd /c call "%STOP_PATH%"
+call "%STOP_PATH%"
 
 :: remove windows service from the device
 "%NSSM_PATH%" remove %SERVICE_NAME% confirm

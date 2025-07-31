@@ -50,7 +50,13 @@ app.post('/config', async (req, res) => {
   CONFIG.legacy = legacy;
 
   // write back to JSON file
-  const targetPath = path.join(__dirname, '../config.json');
+  const isPkg = typeof process.pkg !== 'undefined';
+  const baseDir = isPkg
+    ? // On Windows/Linux/Mac, this is the folder containing your .exe
+      path.dirname(process.execPath)
+    : // During dev, this is your src/ folder
+      __dirname;
+  const targetPath = path.join(baseDir, '../config.json');
   fs.writeFileSync(targetPath, JSON.stringify(CONFIG, null, 2), 'utf-8');
 
   timeout = pollModbus(probeIp, 502, actors, io, timeout);

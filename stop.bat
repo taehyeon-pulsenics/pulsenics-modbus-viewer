@@ -1,12 +1,13 @@
 @echo off 
 
-set SERVICE_NAME=PulsenicsModbusViewerServer
-set NSSM_PATH=%~dp0nssm\nssm.exe
+set "NSSM_PATH=%~dp0nssm\nssm.exe"
+set "STOP_CLIENT_BAT=%SCRIPTDIR%stopClient.bat"
+set "STOP_SERVER_BAT=%SCRIPTDIR%stopServer.bat"
 
 :: stop service
-"%NSSM_PATH%" stop %SERVICE_NAME%
+call "%STOP_SERVER_BAT%"
 
 :: kill gui
-taskkill /F /IM pulsenics-modbus-viewer-app.exe /T
+call "%STOP_CLIENT_BAT%"
 
 exit

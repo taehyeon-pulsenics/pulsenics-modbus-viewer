@@ -29,7 +29,7 @@ if errorlevel 1 (
     "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%SCRIPT_DIR%server-js\dist"
     "%NSSM_EXE%" set "%SERVICE_NAME%" AppStdout  "%LOG_DIR%\service.log"
     "%NSSM_EXE%" set "%SERVICE_NAME%" AppStderr  "%LOG_DIR%\service-error.log"
-    "%NSSM_EXE%" set "%SERVICE_NAME%" Start SERVICE_AUTO_START
+    "%NSSM_EXE%" set "%SERVICE_NAME%" Start SERVICE_DEMAND_START
 ) else (
     echo Service "%SERVICE_NAME%" already installed, skipping install.
 )

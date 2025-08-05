@@ -130,7 +130,7 @@ export function SocketProvider({ children }) {
 
     socketInstance.on('connection', (data) => {
       // only update state when the current state differs from received state
-      setModbusConnected((v) => (v === data ? v : !v))
+      setModbusConnected(data)
     })
 
     socketInstance.on(MODBUS_STATE.DC.CURRENT, (data) => {

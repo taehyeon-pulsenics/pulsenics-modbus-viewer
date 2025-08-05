@@ -69,10 +69,8 @@ app.post('/modbus-data', async (req, res) => {
       actor.send({ type: 'RETRIEVE' });
     }
 
-    io.emit('connection', true);
     res.sendStatus(204);
   } catch {
-    io.emit('connection', false);
     res.sendStatus(500);
   }
 });

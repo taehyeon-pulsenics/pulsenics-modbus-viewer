@@ -289,8 +289,13 @@ const SLAVES = [
  */
 const initModbusConnections = (host, port, io) => {
   for (const slave of SLAVES) {
-    const client = createModbusClientConnection(host, port, slave.unitId, io);
-    slave.client = client;
+    createModbusClientConnection(host, port, slave.unitId, io)
+      .then((client) => {
+        slave.client = client;
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   }
 };
 
@@ -301,23 +306,21 @@ const initModbusConnections = (host, port, io) => {
  * @param {string} port Port of Modbus Server
  * @param {number} unitId Unit (Slave) ID
  * @param {Server} io Socket IO server instance
- * @returns {ModbusRTU} New opened ModbusRTU instance
+ * @returns {Promise<ModbusRTU | null>} New opened ModbusRTU instance or null
  */
-const createModbusClientConnection = (host, port, unitId, io) => {
-  const client = new ModbusRTU();
+const createModbusClientConnection = async (host, port, unitId, io) => {
+  try {
+    const client = new ModbusRTU();
 
-  client
-    .connectTCP(host, { port })
-    .then(() => {
-      client.setID(unitId);
+    await client.connectTCP(host, { port });
 
-      broadcast_connection(io, true);
-    })
-    .catch(() => {
-      broadcast_connection(io, false);
-    });
+    client.setID(unitId);
 
-  return client;
+    return client;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 };
 
 // Helper: read in chunks and concatenate results
@@ -342,151 +345,147 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
 // Poller
 /**
  *
- * @param {string} host IPv4 of Modbus Server
- * @param {string} port Port of Modbus Server
  * @param {{ [key: str]: Actor }} actors
- * @param {Server} io
  */
-async function pollAllSlaves(host, port, actors, io) {
+async function pollAllSlaves(actors) {
   for (const slave of SLAVES) {
-    const { name, unitId, client, readConfig } = slave;
+    const { name, client, readConfig } = slave;
 
-    try {
-      // Coils
-      const coils =
-        readConfig.coils.count > 0
-          ? await readInChunks(
-              client,
-              'readCoils',
-              readConfig.coils.start,
-              readConfig.coils.count,
-              LIMITS.coils
-            )
-          : null;
+    if (!!client && client.isOpen) {
+      try {
+        // Coils
+        const coils =
+          readConfig.coils.count > 0
+            ? await readInChunks(
+                client,
+                'readCoils',
+                readConfig.coils.start,
+                readConfig.coils.count,
+                LIMITS.coils
+              )
+            : null;
 
-      if (coils && readConfig.coils.actors) {
-        for (const actor of Object.keys(readConfig.coils.actors)) {
-          const actorDetail = readConfig.coils.actors[actor];
-          const addresses = actorDetail.address;
-          let regs = [];
-          for (const { start, end } of addresses) {
-            regs = regs.concat(coils.slice(start, end));
+        if (coils && readConfig.coils.actors) {
+          for (const actor of Object.keys(readConfig.coils.actors)) {
+            const actorDetail = readConfig.coils.actors[actor];
+            const addresses = actorDetail.address;
+            let regs = [];
+            for (const { start, end } of addresses) {
+              regs = regs.concat(coils.slice(start, end));
+            }
+            actors[actor].send({
+              type: 'POLL',
+              regs,
+            });
           }
-          actors[actor].send({
-            type: 'POLL',
-            regs,
-          });
         }
-      }
-    } catch (err) {
-      console.error(`Error polling coils of ${name}:`, err.message);
-      if (!client.isOpen) {
-        slave.client = createModbusClientConnection(host, port, unitId, io);
-      }
-    }
+      } catch (err) {
+        console.error(`Error polling coils of ${name}:`, err.message);
 
-    // Discrete inputs
-    try {
-      const discrete =
-        readConfig.discrete.count > 0
-          ? await readInChunks(
-              client,
-              'readDiscreteInputs',
-              readConfig.discrete.start,
-              readConfig.discrete.count,
-              LIMITS.discrete
-            )
-          : null;
+        return false;
+      }
 
-      if (discrete && readConfig.discrete.actors) {
-        for (const actor of Object.keys(readConfig.discrete.actors)) {
-          const actorDetail = readConfig.discrete.actors[actor];
-          const addresses = actorDetail.address;
-          let regs = [];
-          for (const { start, end } of addresses) {
-            regs = regs.concat(discrete.slice(start, end));
+      // Discrete inputs
+      try {
+        const discrete =
+          readConfig.discrete.count > 0
+            ? await readInChunks(
+                client,
+                'readDiscreteInputs',
+                readConfig.discrete.start,
+                readConfig.discrete.count,
+                LIMITS.discrete
+              )
+            : null;
+
+        if (discrete && readConfig.discrete.actors) {
+          for (const actor of Object.keys(readConfig.discrete.actors)) {
+            const actorDetail = readConfig.discrete.actors[actor];
+            const addresses = actorDetail.address;
+            let regs = [];
+            for (const { start, end } of addresses) {
+              regs = regs.concat(discrete.slice(start, end));
+            }
+            actors[actor].send({
+              type: 'POLL',
+              regs,
+            });
           }
-          actors[actor].send({
-            type: 'POLL',
-            regs,
-          });
         }
+      } catch (err) {
+        console.error(`Error polling discrete inputs of ${name}:`, err.message);
+        return false;
       }
-    } catch (err) {
-      console.error(`Error polling discrete inputs of ${name}:`, err.message);
-      if (!client.isOpen) {
-        slave.client = createModbusClientConnection(host, port, unitId, io);
-      }
-    }
 
-    try {
-      // Holding registers
-      const holding =
-        readConfig.holdingRegs.count > 0
-          ? await readInChunks(
-              client,
-              'readHoldingRegisters',
-              readConfig.holdingRegs.start,
-              readConfig.holdingRegs.count,
-              LIMITS.holdingRegs
-            )
-          : null;
+      try {
+        // Holding registers
+        const holding =
+          readConfig.holdingRegs.count > 0
+            ? await readInChunks(
+                client,
+                'readHoldingRegisters',
+                readConfig.holdingRegs.start,
+                readConfig.holdingRegs.count,
+                LIMITS.holdingRegs
+              )
+            : null;
 
-      if (holding && readConfig.holdingRegs.actors) {
-        for (const actor of Object.keys(readConfig.holdingRegs.actors)) {
-          const actorDetail = readConfig.holdingRegs.actors[actor];
-          const addresses = actorDetail.address;
-          let regs = [];
-          for (const { start, end } of addresses) {
-            regs = regs.concat(holding.slice(start, end));
+        if (holding && readConfig.holdingRegs.actors) {
+          for (const actor of Object.keys(readConfig.holdingRegs.actors)) {
+            const actorDetail = readConfig.holdingRegs.actors[actor];
+            const addresses = actorDetail.address;
+            let regs = [];
+            for (const { start, end } of addresses) {
+              regs = regs.concat(holding.slice(start, end));
+            }
+            actors[actor].send({
+              type: 'POLL',
+              regs,
+            });
           }
-          actors[actor].send({
-            type: 'POLL',
-            regs,
-          });
         }
+      } catch (err) {
+        console.error(`Error holding registers of ${name}:`, err.message);
+        return false;
       }
-    } catch (err) {
-      console.error(`Error holding registers of ${name}:`, err.message);
-      if (!client.isOpen) {
-        slave.client = createModbusClientConnection(host, port, unitId, io);
-      }
-    }
 
-    try {
-      // Input registers
-      const inputs =
-        readConfig.inputRegs.count > 0
-          ? await readInChunks(
-              client,
-              'readInputRegisters',
-              readConfig.inputRegs.start,
-              readConfig.inputRegs.count,
-              LIMITS.inputRegs
-            )
-          : null;
+      try {
+        // Input registers
+        const inputs =
+          readConfig.inputRegs.count > 0
+            ? await readInChunks(
+                client,
+                'readInputRegisters',
+                readConfig.inputRegs.start,
+                readConfig.inputRegs.count,
+                LIMITS.inputRegs
+              )
+            : null;
 
-      if (inputs && readConfig.inputRegs.actors) {
-        for (const actor of Object.keys(readConfig.inputRegs.actors)) {
-          const actorDetail = readConfig.inputRegs.actors[actor];
-          const addresses = actorDetail.address;
-          let regs = [];
-          for (const { start, end } of addresses) {
-            regs = regs.concat(inputs.slice(start, end));
+        if (inputs && readConfig.inputRegs.actors) {
+          for (const actor of Object.keys(readConfig.inputRegs.actors)) {
+            const actorDetail = readConfig.inputRegs.actors[actor];
+            const addresses = actorDetail.address;
+            let regs = [];
+            for (const { start, end } of addresses) {
+              regs = regs.concat(inputs.slice(start, end));
+            }
+            actors[actor].send({
+              type: 'POLL',
+              regs,
+            });
           }
-          actors[actor].send({
-            type: 'POLL',
-            regs,
-          });
         }
+      } catch (err) {
+        console.error(`Error polling input registers of ${name}:`, err.message);
+        return false;
       }
-    } catch (err) {
-      console.error(`Error polling input registers of ${name}:`, err.message);
-      if (!client.isOpen) {
-        slave.client = createModbusClientConnection(host, port, unitId, io);
-      }
+    } else {
+      console.error('Modbus server not opened');
+      return false;
     }
   }
+  return true;
 }
 
 /**
@@ -506,14 +505,32 @@ function pollModbus(host, port, actors, io, interval) {
   let busy = false;
 
   const newInterval = setInterval(() => {
-    busy = true;
-    pollAllSlaves(host, port, actors, io);
-    busy = false;
+    if (!busy) {
+      busy = true;
+      pollAllSlaves(actors)
+        .then((v) => {
+          if (v) {
+            broadcast_connection(io, true);
+          } else {
+            broadcast_connection(io, false);
+            initModbusConnections(host, port, io);
+          }
+          busy = false;
+        })
+        .catch((e) => {
+          console.error(e);
+        });
+    }
   }, 1000);
 
   return newInterval;
 }
 
+/**
+ *
+ * @param {Server} io
+ * @param {boolean} connection
+ */
 const broadcast_connection = (io, connection) => {
   io.emit('connection', connection);
 };

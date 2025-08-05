@@ -44,7 +44,7 @@ const MainView = () => {
       return () => clearInterval(timer)
     }
     // if connected, do nothing (no interval to clean up)
-  }, [modbusConnected, triggerDataBroadcast])
+  }, [modbusConnected])
 
   /**
    * Modal Control Functions

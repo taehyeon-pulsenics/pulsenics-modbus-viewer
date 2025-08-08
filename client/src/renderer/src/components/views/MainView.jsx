@@ -37,10 +37,6 @@ const MainView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
 
-  // Update body background color based on dark mode
-  useEffect(() => {
-    document.body.style.backgroundColor = darkMode ? '#333' : '#fff'
-  }, [darkMode])
   useEffect(() => {
     if (!modbusConnected) {
       const timer = setInterval(() => {
@@ -96,7 +92,7 @@ const MainView = () => {
         <Affix offsetTop={0}>
           <Header
             style={{
-              background: geekblue[4],
+              background: darkMode ? geekblue[5] : geekblue[4],
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',

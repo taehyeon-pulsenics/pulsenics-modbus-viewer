@@ -52,9 +52,9 @@ const App = () => {
               <ConfigProvider
                 theme={{
                   token: {
-                    colorPrimary: geekblue[4],
+                    colorPrimary: darkMode ? geekblue[5] : geekblue[4],
                     borderRadius: 2,
-                    colorBgContainer: darkMode ? '#333' : geekblue[0],
+                    colorBgContainer: darkMode ? geekblue[9] : geekblue[0],
                     colorText: darkMode ? '#fff' : '#000'
                   }
                 }}

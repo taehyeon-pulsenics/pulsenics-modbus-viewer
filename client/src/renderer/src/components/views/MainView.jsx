@@ -37,7 +37,10 @@ const MainView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)
 
-  // retrieve modbus state on initial load of main view
+  // Update body background color based on dark mode
+  useEffect(() => {
+    document.body.style.backgroundColor = darkMode ? '#333' : '#fff'
+  }, [darkMode])
   useEffect(() => {
     if (!modbusConnected) {
       const timer = setInterval(() => {

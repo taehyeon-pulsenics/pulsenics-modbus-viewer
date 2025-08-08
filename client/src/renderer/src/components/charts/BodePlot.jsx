@@ -13,9 +13,17 @@ import Plot from 'react-plotly.js'
 const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }) => {
   const chartRef = useRef(null)
   const [layout, setLayout] = useState({
-    title: chartTitle,
+    title: {
+      text: chartTitle,
+      font: {
+        size: 16
+      },
+      xref: 'paper',
+      x: 0.5,
+      xanchor: 'center'
+    },
     xaxis: {
-      title: 'Frequency (Hz}',
+      title: 'Frequency (Hz)',
       type: 'log',
       autorange: true
     },
@@ -48,7 +56,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
       style={{ width: '100%', height: '100%' }}
       ref={chartRef}
     >
-      <h4 style={{ textAlign: 'center' }}>{chartTitle}</h4>
+      {/* <h4 style={{ textAlign: 'center' }}>{chartTitle}</h4> */}
       <Plot
         data={measurements.map((m) => ({
           x: frequencies,

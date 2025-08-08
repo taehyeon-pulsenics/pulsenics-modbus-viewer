@@ -1,6 +1,4 @@
 const ModbusRTU = require('modbus-serial');
-const { Server } = require('socket.io');
-const { Actor } = require('xstate');
 const { MODBUS_STATE } = require('./modbus-state');
 
 // Modbus protocol limits
@@ -282,14 +280,19 @@ const SLAVES = [
 ];
 
 /**
- * Initialize socket connection to Modbus Server at given address
- * @param {string} host IPv4 of Modbus Server
- * @param {string} port Port of Modbus Server
- * @param {Server} io Socket IO server instance
+ * Initializes Modbus connections for each slave device.
+ *
+ * @param {string} host - The hostname or IP address of the Modbus server.
+ * @param {number} port - The port number on which the Modbus server is listening.
+ *
+ * Iterates over the list of SLAVES, creating a Modbus client connection
+ * for each slave using the specified host and port. Assigns the created
+ * client to the slave object. Logs any errors encountered during the
+ * connection process.
  */
-const initModbusConnections = (host, port, io) => {
+const initModbusConnections = (host, port) => {
   for (const slave of SLAVES) {
-    createModbusClientConnection(host, port, slave.unitId, io)
+    createModbusClientConnection(host, port, slave.unitId)
       .then((client) => {
         slave.client = client;
       })
@@ -300,15 +303,14 @@ const initModbusConnections = (host, port, io) => {
 };
 
 /**
- * Create new Modbus connection at given address's unit
+ * Establishes a Modbus TCP connection to a specified host and port.
  *
- * @param {string} host IPv4 of Modbus Server
- * @param {string} port Port of Modbus Server
- * @param {number} unitId Unit (Slave) ID
- * @param {Server} io Socket IO server instance
- * @returns {Promise<ModbusRTU | null>} New opened ModbusRTU instance or null
+ * @param {string} host - The IP address or hostname of the Modbus server.
+ * @param {number} port - The port number on which the Modbus server is listening.
+ * @param {number} unitId - The unit ID of the Modbus device.
+ * @returns {Promise<object|null>} A promise that resolves to the Modbus client instance if successful, or null if an error occurs.
  */
-const createModbusClientConnection = async (host, port, unitId, io) => {
+const createModbusClientConnection = async (host, port, unitId) => {
   try {
     const client = new ModbusRTU();
 
@@ -323,7 +325,17 @@ const createModbusClientConnection = async (host, port, unitId, io) => {
   }
 };
 
-// Helper: read in chunks and concatenate results
+/**
+ * Reads data from a Modbus client in chunks, allowing for large data sets to be processed
+ * without exceeding Modbus inherit polling limits or timeouts.
+ *
+ * @param {Object} client - The Modbus client instance used for communication.
+ * @param {string} fnName - The name of the function to call on the client for reading data.
+ * @param {number} start - The starting address for the read operation.
+ * @param {number} count - The total number of data points to read.
+ * @param {number} chunkLimit - The maximum number of data points to read in a single chunk.
+ * @returns {Promise<Array>} - A promise that resolves to an array containing the read data.
+ */
 async function readInChunks(client, fnName, start, count, chunkLimit) {
   const readFn = client[fnName].bind(client);
   const result = [];
@@ -342,10 +354,19 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
   return result;
 }
 
-// Poller
 /**
+ * Polls all Modbus slaves for their coils, discrete inputs, holding registers, and input registers.
  *
- * @param {{ [key: str]: Actor }} actors
+ * Iterates over each slave in the SLAVES array, checking if the Modbus client is open.
+ * For each slave, it reads data in chunks for coils, discrete inputs, holding registers,
+ * and input registers based on the configuration provided in `readConfig`.
+ *
+ * Sends the polled data to the corresponding actors specified in the `actors` parameter.
+ * Logs errors if any occur during the polling process.
+ *
+ * @param {Object} actors - An object containing actor instances to which the polled data is sent.
+ * @returns {Promise<boolean>} - Returns a promise that resolves to true if polling is successful,
+ *                               or false if an error occurs.
  */
 async function pollAllSlaves(actors) {
   for (const slave of SLAVES) {
@@ -489,24 +510,24 @@ async function pollAllSlaves(actors) {
 }
 
 /**
+ * Polls Modbus devices at a specified interval, managing connections and broadcasting status.
  *
- * @param {str} host
- * @param {str | number} port
- * @param {{ [key: str]: Actor }} actors
- * @param {Server} io
- * @param {NodeJS.Timeout} interval
- * @returns
+ * @param {string} host - The host address of the Modbus server.
+ * @param {number} port - The port number of the Modbus server.
+ * @param {Array} actors - An array of Modbus actors to poll.
+ * @param {Object} io - The socket.io instance for broadcasting connection status.
+ * @param {number} interval - The interval ID to clear before setting a new one.
+ * @returns {NodeJS.Timeout} - The new interval ID for the polling process.
  */
 function pollModbus(host, port, actors, io, interval) {
   clearInterval(interval);
 
-  initModbusConnections(host, port, io);
+  initModbusConnections(host, port);
 
   let busy = false;
 
   const newInterval = setInterval(() => {
     if (!busy) {
-      // it gets stuck somewhere over here
       busy = true;
       pollAllSlaves(actors)
         .then((v) => {
@@ -514,7 +535,7 @@ function pollModbus(host, port, actors, io, interval) {
             broadcast_connection(io, true);
           } else {
             broadcast_connection(io, false);
-            initModbusConnections(host, port, io);
+            initModbusConnections(host, port);
           }
           busy = false;
         })
@@ -528,15 +549,14 @@ function pollModbus(host, port, actors, io, interval) {
 }
 
 /**
+ * Broadcasts a connection event to all connected clients.
  *
- * @param {Server} io
- * @param {boolean} connection
+ * @param {Object} io - The socket.io server instance used for broadcasting.
+ * @param {Object} connection - The connection object to be emitted.
  */
 const broadcast_connection = (io, connection) => {
   io.emit('connection', connection);
 };
-
-module.exports = { pollModbus };
 
 /**
  * Returns a promise that resolves or rejects with the result of the input promise,
@@ -555,3 +575,5 @@ function withTimeout(promise, ms) {
     ),
   ]);
 }
+
+module.exports = { pollModbus };

@@ -9,7 +9,7 @@ import ErrorSignalsView from './ErrorSignalsView'
 import ModbusConErrorView from './ModbusConErrorView'
 import SettingModal from '../modals/SettingModal'
 import { Settings2 } from 'lucide-react'
-import { blue } from '@ant-design/colors'
+import { blue, geekblue } from '@ant-design/colors'
 
 import './MainView.css'
 import FocusedView from './FocusedView'
@@ -91,7 +91,7 @@ const MainView = () => {
         <Affix offsetTop={0}>
           <Header
             style={{
-              background: blue[4],
+              background: geekblue[4],
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',

@@ -19,6 +19,8 @@ import {
   ModbusConnectionProvider
 } from './contexts/modbus'
 import MainView from './components/views/MainView'
+import { ConfigProvider, theme } from 'antd'
+import { geekblue } from '@ant-design/colors'
 
 const App = () => {
   return (
@@ -43,7 +45,18 @@ const App = () => {
       ]}
     >
       <SocketProvider>
-        <MainView />
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: geekblue[4],
+              borderRadius: 2,
+
+              colorBgContainer: geekblue[0]
+            }
+          }}
+        >
+          <MainView />
+        </ConfigProvider>
       </SocketProvider>
     </MultiContextProvider>
   )

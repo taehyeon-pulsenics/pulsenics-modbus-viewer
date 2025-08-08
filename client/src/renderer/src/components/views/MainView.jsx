@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react'
-import { Layout, Tabs, theme, Button, Affix, Alert, Typography, Switch } from 'antd'
+import { Layout, Tabs, theme, Button, Affix, Alert, Typography, Switch, Space, Tooltip } from 'antd'
 import { DarkModeContext } from '../../contexts/DarkModeContext'
 import StickyBox from 'react-sticky-box'
 import { useSocket } from '../../contexts/SocketContext'
@@ -101,19 +101,17 @@ const MainView = () => {
             }}
           >
             <Typography.Title>Probe @ {config.probeIp}</Typography.Title>
-            <Switch
-              checked={darkMode}
-              onChange={() => setDarkMode(!darkMode)}
-              checkedChildren="Dark"
-              unCheckedChildren="Light"
-              style={{ marginRight: '16px' }}
-            />
-            <Button
-              style={{ marginLeft: 'auto' }}
-              type="text"
-              icon={<Settings2 />}
-              onClick={showModal}
-            />
+            <Space style={{ marginLeft: 'auto' }}>
+              <Switch
+                checked={darkMode}
+                onChange={() => setDarkMode(!darkMode)}
+                checkedChildren="Dark"
+                unCheckedChildren="Light"
+              />
+              <Tooltip title="Settings">
+                <Button type="text" icon={<Settings2 size={20} />} onClick={showModal} />
+              </Tooltip>
+            </Space>
           </Header>
         </Affix>
 

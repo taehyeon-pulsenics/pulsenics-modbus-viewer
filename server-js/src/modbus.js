@@ -334,7 +334,7 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
     const addr = start + offset;
 
     // e.g. client.readCoils(addr, thisCount)
-    const resp = await readFn(addr, thisCount);
+    const resp = await withTimeout(readFn(addr, thisCount), 5000);
     result.push(...resp.data);
     offset += thisCount;
   }
@@ -506,6 +506,7 @@ function pollModbus(host, port, actors, io, interval) {
 
   const newInterval = setInterval(() => {
     if (!busy) {
+      // it gets stuck somewhere over here
       busy = true;
       pollAllSlaves(actors)
         .then((v) => {
@@ -536,3 +537,21 @@ const broadcast_connection = (io, connection) => {
 };
 
 module.exports = { pollModbus };
+
+/**
+ * Returns a promise that resolves or rejects with the result of the input promise,
+ * or rejects with a timeout error if the specified time limit is exceeded.
+ *
+ * @param {Promise} promise - The promise to race against the timeout.
+ * @param {number} ms - The time in milliseconds to wait before rejecting with a timeout error.
+ * @returns {Promise} A promise that resolves or rejects with the result of the input promise,
+ * or rejects with a timeout error if the time limit is exceeded.
+ */
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), ms)
+    ),
+  ]);
+}

@@ -1,6 +1,7 @@
 import { SocketProvider } from './contexts/SocketContext'
 import { MultiContextProvider } from './contexts/MultiContext'
-import { DarkModeProvider } from './contexts/DarkModeContext'
+import { DarkModeContext, DarkModeProvider } from './contexts/DarkModeContext'
+import {
   FaultsProvider,
   ProbeInformationProvider,
   AcCurrentProvider,

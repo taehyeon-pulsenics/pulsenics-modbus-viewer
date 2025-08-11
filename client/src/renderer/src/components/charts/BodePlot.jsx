@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, memo, useState, useContext } from 'react'
+import React, { useEffect, useRef, memo, useState, useContext } from 'react';
 import Plot from 'react-plotly.js'
 import { DarkModeContext } from '../../contexts/DarkModeContext'
 import { geekblue, gray } from '@ant-design/colors'
@@ -13,44 +13,31 @@ import { geekblue, gray } from '@ant-design/colors'
  * - yAxisLabel: string              // label for the y‐axis
  */
 const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }) => {
-  const chartRef = useRef(null)
-  const { darkMode } = useContext(DarkModeContext)
-  const [layout, setLayout] = useState({})
+  const chartRef = useRef(null);
+  const { darkMode } = useContext(DarkModeContext);
+  const [layout, setLayout] = useState({});
 
   useEffect(() => {
     // dimensions
-    const container = chartRef.current
-    if (!!container) {
-      const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect()
-      const margin = { top: 0, right: 0, bottom: 0, left: 0 }
-      const width = containerWidth - margin.left - margin.right
-      const height = containerHeight - margin.top - margin.bottom
+    const container = chartRef.current;
+    if (container) {
+      const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect();
+      const width = containerWidth;
+      const height = containerHeight;
 
-      setLayout((l) => ({
-        ...l,
+      setLayout({
         width,
         height,
         paper_bgcolor: darkMode ? geekblue[9] : geekblue[0],
         plot_bgcolor: darkMode ? geekblue[9] : geekblue[0],
-
         title: {
           text: chartTitle,
-          font: {
-            size: 16,
-            color: darkMode ? gray[0] : gray[5]
-          }
+          font: { size: 16, color: darkMode ? gray[0] : gray[5] }
         },
         xaxis: {
-          title: {
-            text: 'Frequency (Hz)',
-            font: {
-              size: 16,
-              color: darkMode ? gray[0] : gray[5]
-            }
-          },
+          title: { text: 'Frequency (Hz)', font: { size: 16, color: darkMode ? gray[0] : gray[5] } },
           type: 'log',
           autorange: true,
-
           showline: true,
           linecolor: darkMode ? gray[0] : gray[5],
           linewidth: 2,
@@ -59,14 +46,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
           zerolinecolor: darkMode ? gray[0] : gray[5]
         },
         yaxis: {
-          title: {
-            text: yAxisLabel,
-            font: {
-              size: 16,
-              color: darkMode ? gray[0] : gray[5]
-            }
-          },
-
+          title: { text: yAxisLabel, font: { size: 16, color: darkMode ? gray[0] : gray[5] } },
           showline: true,
           linecolor: darkMode ? gray[0] : gray[5],
           linewidth: 2,
@@ -74,27 +54,13 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
           gridcolor: darkMode ? gray[0] : gray[5],
           zerolinecolor: darkMode ? gray[0] : gray[5]
         }
-      }))
+      });
     }
-  }, [darkMode])
+  }, [darkMode, chartTitle, yAxisLabel]);
 
   return (
-    <div
-      key={chartId}
-      className="BodePlot"
-      style={{ width: '100%', height: '100%' }}
-      ref={chartRef}
-    >
-      {/* <h4 style={{ textAlign: 'center' }}>{chartTitle}</h4> */}
-      <Plot
-        data={measurements.map((m) => ({
-          x: frequencies,
-          y: m,
-          type: 'scatter',
-          mode: 'lines+markers'
-        }))}
-        layout={layout}
-      />
+    <div key={chartId} className="BodePlot" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }} ref={chartRef}>
+      <Plot data={measurements.map((m) => ({ x: frequencies, y: m, type: 'scatter', mode: 'lines+markers' }))} layout={layout} />
     </div>
   )
 }

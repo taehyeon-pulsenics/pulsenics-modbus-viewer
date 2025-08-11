@@ -1,8 +1,10 @@
 import { Checkbox, Col, Flex, Modal, Row, Switch } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
-import React, { useReducer, useState } from 'react'
+import React, { useContext, useReducer, useState } from 'react'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import NumberTable from '../tables/NumberTable'
+import { DarkModeContext } from '../../contexts/DarkModeContext'
+import { geekblue } from '@ant-design/colors'
 
 /**
  *
@@ -20,6 +22,7 @@ const CMUACDataModal = ({
   title = ''
 }) => {
   const [graphView, setGraphView] = useState(false)
+  const { darkMode } = useContext(DarkModeContext)
 
   const [selectedChannels, dispatch] = useReducer((state, action) => {
     const newSelectedChannels = [...state]
@@ -32,7 +35,17 @@ const CMUACDataModal = ({
   }
 
   return (
-    <Modal width="80%" title={title} open={open} onCancel={onCancel} footer={null}>
+    <Modal
+      width="80%"
+      title={title}
+      open={open}
+      onCancel={onCancel}
+      footer={null}
+      styles={{
+        header: { backgroundColor: darkMode ? geekblue[9] : geekblue[0] },
+        content: { backgroundColor: darkMode ? geekblue[9] : geekblue[0] }
+      }}
+    >
       <Flex gap={10}>
         Graph View?
         <Switch value={graphView} onChange={(e) => setGraphView(e)} />

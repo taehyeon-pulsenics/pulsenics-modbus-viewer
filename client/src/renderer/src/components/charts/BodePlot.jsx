@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, memo, useState } from 'react'
+import React, { useEffect, useRef, memo, useState, useContext } from 'react'
 import Plot from 'react-plotly.js'
+import { DarkModeContext } from '../../contexts/DarkModeContext'
+import { geekblue, gray } from '@ant-design/colors'
 
 /**
  * Chart component renders a plotly plot for multiple measurement sets.
@@ -12,25 +14,8 @@ import Plot from 'react-plotly.js'
  */
 const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }) => {
   const chartRef = useRef(null)
-  const [layout, setLayout] = useState({
-    title: {
-      text: chartTitle,
-      font: {
-        size: 16
-      },
-      xref: 'paper',
-      x: 0.5,
-      xanchor: 'center'
-    },
-    xaxis: {
-      title: 'Frequency (Hz)',
-      type: 'log',
-      autorange: true
-    },
-    yaxis: {
-      title: yAxisLabel
-    }
-  })
+  const { darkMode } = useContext(DarkModeContext)
+  const [layout, setLayout] = useState({})
 
   useEffect(() => {
     // dimensions
@@ -44,10 +29,54 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
       setLayout((l) => ({
         ...l,
         width,
-        height
+        height,
+        paper_bgcolor: darkMode ? geekblue[9] : geekblue[0],
+        plot_bgcolor: darkMode ? geekblue[9] : geekblue[0],
+
+        title: {
+          text: chartTitle,
+          font: {
+            size: 16,
+            color: darkMode ? gray[0] : gray[5]
+          }
+        },
+        xaxis: {
+          title: {
+            text: 'Frequency (Hz)',
+            font: {
+              size: 16,
+              color: darkMode ? gray[0] : gray[5]
+            }
+          },
+          type: 'log',
+          autorange: true,
+
+          showline: true,
+          linecolor: darkMode ? gray[0] : gray[5],
+          linewidth: 2,
+          tickfont: { color: darkMode ? gray[0] : gray[5] },
+          gridcolor: darkMode ? gray[0] : gray[5],
+          zerolinecolor: darkMode ? gray[0] : gray[5]
+        },
+        yaxis: {
+          title: {
+            text: yAxisLabel,
+            font: {
+              size: 16,
+              color: darkMode ? gray[0] : gray[5]
+            }
+          },
+
+          showline: true,
+          linecolor: darkMode ? gray[0] : gray[5],
+          linewidth: 2,
+          tickfont: { color: darkMode ? gray[0] : gray[5] },
+          gridcolor: darkMode ? gray[0] : gray[5],
+          zerolinecolor: darkMode ? gray[0] : gray[5]
+        }
       }))
     }
-  }, [])
+  }, [darkMode])
 
   return (
     <div

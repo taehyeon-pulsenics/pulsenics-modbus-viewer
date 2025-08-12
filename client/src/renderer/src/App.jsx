@@ -87,7 +87,16 @@ const App = () => {
                           colorWarningBorder: '#d89614',
                           colorErrorBorder: '#a61d24'
                         }
-                      : {}
+                      : {},
+                    Modal: darkMode
+                      ? {
+                          contentBg: geekblue[9],
+                          headerBg: geekblue[9]
+                        }
+                      : {
+                          contentBg: geekblue[0],
+                          headerBg: geekblue[0]
+                        }
                   }
                 }}
               >

@@ -1,12 +1,8 @@
 import { Button, Form, Input, Modal, Switch } from 'antd'
 import { useSocket } from '../../contexts/SocketContext'
-import { geekblue } from '@ant-design/colors'
-import { useContext } from 'react'
-import { DarkModeContext } from '../../contexts/DarkModeContext'
 
 const SettingModal = ({ open, onCancel, onSubmit }) => {
   const { config, changeConfig } = useSocket()
-  const { darkMode } = useContext(DarkModeContext)
   const [form] = Form.useForm()
 
   /**
@@ -18,17 +14,7 @@ const SettingModal = ({ open, onCancel, onSubmit }) => {
   }
 
   return (
-    <Modal
-      className="setting-modal"
-      title="Settings"
-      open={open}
-      onCancel={onCancel}
-      footer={null}
-      styles={{
-        header: { backgroundColor: darkMode ? geekblue[9] : geekblue[0] },
-        content: { backgroundColor: darkMode ? geekblue[9] : geekblue[0] }
-      }}
-    >
+    <Modal className="setting-modal" title="Settings" open={open} onCancel={onCancel} footer={null}>
       <Form
         form={form}
         labelCol={{ span: 4 }}

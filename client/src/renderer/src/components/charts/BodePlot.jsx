@@ -4,13 +4,17 @@ import { DarkModeContext } from '../../contexts/DarkModeContext'
 import { geekblue, gray } from '@ant-design/colors'
 
 /**
- * Chart component renders a plotly plot for multiple measurement sets.
- * Props:
- * - frequencies: number[]           // x‐axis values, same for every set
- * - measurements: number[][]        // up to 24 arrays, each the same length as frequencies
- * - chartId: string                 // unique ID for the chart container
- * - chartTitle: string              // title above the chart
- * - yAxisLabel: string              // label for the y‐axis
+ * BodePlot component renders a responsive Plotly chart for visualizing frequency response data.
+ * It adjusts its layout based on the container's dimensions and the current dark mode setting.
+ *
+ * @param {Object} props - The properties object.
+ * @param {number[]} props.frequencies - Array of frequency values for the x-axis.
+ * @param {number[][]} props.measurements - Array of measurement sets, each corresponding to the frequencies.
+ * @param {string} props.chartId - Unique identifier for the chart container.
+ * @param {string} props.chartTitle - Title displayed above the chart.
+ * @param {string} props.yAxisLabel - Label for the y-axis.
+ *
+ * @returns {JSX.Element} A JSX element rendering the Bode plot.
  */
 const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }) => {
   const chartRef = useRef(null)

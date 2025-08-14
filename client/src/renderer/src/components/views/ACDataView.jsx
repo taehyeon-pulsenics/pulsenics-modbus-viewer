@@ -8,10 +8,11 @@ import {
 import { Button, Space } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
 import CMUACDataModal from '../modals/CMUACDataModal'
-import { CloudOff, Search } from 'lucide-react'
 import NumberTable from '../tables/NumberTable'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
+import CloudOff from '../icons/CloudOff'
+import Search from '../icons/Search'
 
 const ACDataView = () => {
   const { acCurrentMagnitude, acCurrentPhase } = useContext(AcCurrentContext)
@@ -75,17 +76,9 @@ const ACDataView = () => {
         title="View CMU Data"
         render={(value) =>
           !!value.connected ? (
-            <Button
-              type="primary"
-              icon={<Search style={{ fontSize: '16px' }} />}
-              onClick={() => showModal(value.cmuNumber)}
-            />
+            <Button type="primary" icon={<Search />} onClick={() => showModal(value.cmuNumber)} />
           ) : (
-            <Button
-              type="dashed"
-              icon={<CloudOff style={{ color: 'red', fontSize: '16px' }} />}
-              onClick={() => showModal(value.cmuNumber)}
-            />
+            <Button type="dashed" icon={<CloudOff />} onClick={() => showModal(value.cmuNumber)} />
           )
         }
       />

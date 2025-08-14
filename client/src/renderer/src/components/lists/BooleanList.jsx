@@ -1,5 +1,6 @@
 import { List, Typography } from 'antd'
-import { CircleCheck, CircleX } from 'lucide-react'
+import CircleX from '../icons/CircleX'
+import CircleCheck from '../icons/CircleCheck'
 
 const BooleanList = ({ dataSource }) => {
   return (
@@ -8,7 +9,7 @@ const BooleanList = ({ dataSource }) => {
       renderItem={(item) => (
         <List.Item>
           <List.Item.Meta
-            avatar={item.data ? <CircleCheck color="green" /> : <CircleX color="red" />}
+            avatar={item.data ? <CircleCheck /> : <CircleX />}
             title={<Typography.Text>{item.title}</Typography.Text>}
           />
         </List.Item>

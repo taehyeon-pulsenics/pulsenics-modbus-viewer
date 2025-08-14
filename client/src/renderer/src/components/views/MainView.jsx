@@ -9,12 +9,12 @@ import ACDataView from './ACDataView'
 import ErrorSignalsView from './ErrorSignalsView'
 import ModbusConErrorView from './ModbusConErrorView'
 import SettingModal from '../modals/SettingModal'
-import { Settings2 } from 'lucide-react'
-import { blue, geekblue } from '@ant-design/colors'
+import { geekblue } from '@ant-design/colors'
 
 import './MainView.css'
 import FocusedView from './FocusedView'
 import { ModbusConnectionContext } from '../../contexts/modbus'
+import Settings from '../icons/Settings'
 
 const { Header, Content } = Layout
 
@@ -101,15 +101,18 @@ const MainView = () => {
             }}
           >
             <Typography.Title>Probe @ {config.probeIp}</Typography.Title>
-            <Space style={{ marginLeft: 'auto' }}>
+            <Space style={{ marginLeft: 'auto', alignItems: 'baseline' }}>
               <Switch
                 checked={darkMode}
                 onChange={() => setDarkMode(!darkMode)}
                 checkedChildren="Dark"
                 unCheckedChildren="Light"
+                style={{
+                  marginBottom: '12px'
+                }}
               />
               <Tooltip title="Settings">
-                <Button type="text" icon={<Settings2 size={20} />} onClick={showModal} />
+                <Button icon={<Settings />} type="primary" onClick={showModal} />
               </Tooltip>
             </Space>
           </Header>

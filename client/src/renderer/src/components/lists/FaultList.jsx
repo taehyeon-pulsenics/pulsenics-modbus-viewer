@@ -1,5 +1,6 @@
 import { List, Space, Tooltip, Typography } from 'antd'
-import { CircleDashed, CircleSlash } from 'lucide-react'
+import CircleFilled from '../icons/CircleFilled'
+import CircleDashed from '../icons/CircleDashed'
 
 const FaultList = ({ dataSource }) => {
   return (
@@ -10,7 +11,7 @@ const FaultList = ({ dataSource }) => {
           <List.Item.Meta
             avatar={
               <Tooltip title={<FaultDescriptor details={item.details} />}>
-                {item.data ? <CircleSlash color="red" /> : <CircleDashed />}
+                {item.data ? <CircleFilled /> : <CircleDashed />}
               </Tooltip>
             }
             title={<Typography.Text>{item.title}</Typography.Text>}
@@ -24,9 +25,6 @@ const FaultList = ({ dataSource }) => {
 const FaultDescriptor = ({ details }) => {
   return (
     <Space direction="vertical">
-      <Typography.Text type="danger">
-        When <CircleSlash color="red" size={14} /> :
-      </Typography.Text>
       <Typography.Text type="danger">{details}</Typography.Text>
     </Space>
   )

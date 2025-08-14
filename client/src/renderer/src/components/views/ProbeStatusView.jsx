@@ -1,5 +1,4 @@
 import { useContext } from 'react'
-import { Cloud, CloudOff } from 'lucide-react'
 import { Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
@@ -11,6 +10,8 @@ import {
   SampleControlsContext,
   SampleMetadataContext
 } from '../../contexts/modbus'
+import CloudOff from '../icons/CloudOff'
+import Cloud from '../icons/Cloud'
 
 const ProbeStatusView = () => {
   const { sampleModeCoil, startEISCoil, interruptCoil } = useContext(SampleCoilsContext)
@@ -20,15 +21,7 @@ const ProbeStatusView = () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CMUConnectionGridView
-        render={(value) =>
-          !!value.connected ? (
-            <Cloud style={{ color: 'green', fontSize: '16px' }} />
-          ) : (
-            <CloudOff style={{ color: 'red', fontSize: '16px' }} />
-          )
-        }
-      />
+      <CMUConnectionGridView render={(value) => (!!value.connected ? <Cloud /> : <CloudOff />)} />
       <CollapsibleCard size="small" title="AC Coil">
         <BooleanList
           dataSource={[

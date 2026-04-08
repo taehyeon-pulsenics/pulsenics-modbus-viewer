@@ -1,12 +1,11 @@
-import { useContext } from 'react'
 import { Space } from 'antd'
 import { useSocket } from '../../contexts/SocketContext'
 import FaultPanelView from '../subviews/FaultPanelView'
 import BooleanList from '../lists/BooleanList'
-import { SampleStatusContext } from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 
 const ErrorSignalsView = () => {
-  const { sampleFailed } = useContext(SampleStatusContext)
+  const sampleFailed = useModbusStore((s) => s.sampleFailed)
   const { config } = useSocket()
 
   return (

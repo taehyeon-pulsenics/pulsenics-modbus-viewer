@@ -1,22 +1,27 @@
-import { useContext } from 'react'
+import { useState } from 'react'
 import { Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
 import BooleanList from '../lists/BooleanList'
 import ProbeStatusSubview from '../subviews/ProbeStatusView'
-import {
-  SampleCoilsContext,
-  SampleControlsContext,
-  SampleMetadataContext
-} from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 import CloudOff from '../icons/CloudOff'
 import Cloud from '../icons/Cloud'
 
 const ProbeStatusView = () => {
-  const { sampleModeCoil, startEISCoil, interruptCoil } = useContext(SampleCoilsContext)
-  const { minFreq, maxFreq, amp, nTotalFreqs, nSimulFreqs } = useContext(SampleControlsContext)
-  const { dutId, triggerId, experimentId, metadata } = useContext(SampleMetadataContext)
+  const sampleModeCoil = useModbusStore((s) => s.sampleModeCoil)
+  const startEISCoil = useModbusStore((s) => s.startEISCoil)
+  const interruptCoil = useModbusStore((s) => s.interruptCoil)
+  const minFreq = useModbusStore((s) => s.minFreq)
+  const maxFreq = useModbusStore((s) => s.maxFreq)
+  const amp = useModbusStore((s) => s.amp)
+  const nTotalFreqs = useModbusStore((s) => s.nTotalFreqs)
+  const nSimulFreqs = useModbusStore((s) => s.nSimulFreqs)
+  const dutId = useModbusStore((s) => s.dutId)
+  const triggerId = useModbusStore((s) => s.triggerId)
+  const experimentId = useModbusStore((s) => s.experimentId)
+  const metadata = useModbusStore((s) => s.metadata)
   const { config } = useSocket()
 
   return (

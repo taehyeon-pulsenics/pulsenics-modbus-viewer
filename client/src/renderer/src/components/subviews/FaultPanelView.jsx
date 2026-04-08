@@ -1,6 +1,5 @@
 import { Row, Col } from 'antd'
-import { FaultsContext } from '../../contexts/modbus'
-import { useContext } from 'react'
+import { useModbusStore } from '../../store/modbusStore'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import FaultList from '../lists/FaultList'
 
@@ -24,7 +23,7 @@ const FaultPanelView = () => {
     eisEnableSwitchOffPreventingSample,
     reversePolarityDetected,
     inputOverloadDetected
-  } = useContext(FaultsContext)
+  } = useModbusStore((s) => s.faults)
 
   const signals = [
     {

@@ -1,14 +1,14 @@
-import { useContext } from 'react'
 import { useSocket } from '../../contexts/SocketContext'
 import { Col, Row, Space, Typography } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import FaultPanelView from '../subviews/FaultPanelView'
 import ProbeStatusView from '../subviews/ProbeStatusView'
-import { ClientMessageContext, ProbeInformationContext } from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 
 const FocusedView = () => {
-  const { probeSn, modbusVersion } = useContext(ProbeInformationContext)
-  const { clientMsg } = useContext(ClientMessageContext)
+  const probeSn = useModbusStore((s) => s.probeSn)
+  const modbusVersion = useModbusStore((s) => s.modbusVersion)
+  const clientMsg = useModbusStore((s) => s.clientMsg)
   const { config } = useSocket()
 
   return (

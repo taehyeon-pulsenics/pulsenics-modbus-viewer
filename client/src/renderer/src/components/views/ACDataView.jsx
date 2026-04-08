@@ -1,10 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react'
-import {
-  AcCurrentContext,
-  AcFrequencyContext,
-  AcProbeVoltageContext,
-  AcCmuVoltageContext
-} from '../../contexts/modbus'
+import React, { useState } from 'react'
+import { useModbusStore } from '../../store/modbusStore'
 import { Button, Space } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
 import CMUACDataModal from '../modals/CMUACDataModal'
@@ -15,60 +10,19 @@ import CloudOff from '../icons/CloudOff'
 import Search from '../icons/Search'
 
 const ACDataView = () => {
-  const { acCurrentMagnitude, acCurrentPhase } = useContext(AcCurrentContext)
-  const { freqs } = useContext(AcFrequencyContext)
-  const { acProbeVoltageMagnitude, acProbeVoltagePhase } = useContext(AcProbeVoltageContext)
-  const {
-    acCmu1VoltageMagnitude,
-    acCmu1VoltagePhase,
-    acCmu2VoltageMagnitude,
-    acCmu2VoltagePhase,
-    acCmu3VoltageMagnitude,
-    acCmu3VoltagePhase,
-    acCmu4VoltageMagnitude,
-    acCmu4VoltagePhase
-  } = useContext(AcCmuVoltageContext)
+  const acCurrentMagnitude = useModbusStore((s) => s.acCurrentMagnitude)
+  const acCurrentPhase = useModbusStore((s) => s.acCurrentPhase)
+  const freqs = useModbusStore((s) => s.freqs)
+  const acProbeVoltageMagnitude = useModbusStore((s) => s.acProbeVoltageMagnitude)
+  const acProbeVoltagePhase = useModbusStore((s) => s.acProbeVoltagePhase)
+  const acCmuVoltages = useModbusStore((s) => s.acCmuVoltages)
 
   const [selectedCMU, setSelectedCMU] = useState(null)
 
-  /**
-   * Modal Control Functions
-   */
-  const showModal = (cmuNumber) => {
-    setSelectedCMU(cmuNumber)
-  }
-  const handleCancel = () => {
-    setSelectedCMU(null)
-  }
+  const showModal = (cmuNumber) => setSelectedCMU(cmuNumber)
+  const handleCancel = () => setSelectedCMU(null)
   const isModalOpen = selectedCMU !== null
-  const getCorrectVoltageMag = (cmuNumber) => {
-    switch (cmuNumber) {
-      case 1:
-        return acCmu1VoltageMagnitude
-      case 2:
-        return acCmu2VoltageMagnitude
-      case 3:
-        return acCmu3VoltageMagnitude
-      case 4:
-        return acCmu4VoltageMagnitude
-    }
-
-    return null
-  }
-  const getCorrectVoltagePha = (cmuNumber) => {
-    switch (cmuNumber) {
-      case 1:
-        return acCmu1VoltagePhase
-      case 2:
-        return acCmu2VoltagePhase
-      case 3:
-        return acCmu3VoltagePhase
-      case 4:
-        return acCmu4VoltagePhase
-    }
-
-    return null
-  }
+  const selectedCmuData = selectedCMU !== null ? acCmuVoltages[selectedCMU - 1] : null
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
@@ -110,8 +64,8 @@ const ACDataView = () => {
           frequencies={freqs}
           currentMags={acCurrentMagnitude}
           currentPhases={acCurrentPhase}
-          voltageMags={getCorrectVoltageMag(selectedCMU)}
-          voltagePhases={getCorrectVoltagePha(selectedCMU)}
+          voltageMags={selectedCmuData?.magnitude ?? null}
+          voltagePhases={selectedCmuData?.phase ?? null}
           open={isModalOpen}
           onCancel={handleCancel}
         />

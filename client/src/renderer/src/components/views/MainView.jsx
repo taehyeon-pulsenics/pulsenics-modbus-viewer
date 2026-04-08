@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Layout, Tabs, theme, Button, Affix, Alert, Typography, Switch, Space, Tooltip } from 'antd'
 import { DarkModeContext } from '../../contexts/DarkModeContext'
 import StickyBox from 'react-sticky-box'
@@ -13,7 +13,7 @@ import { geekblue } from '@ant-design/colors'
 
 import './MainView.css'
 import FocusedView from './FocusedView'
-import { ModbusConnectionContext } from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 import Settings from '../icons/Settings'
 
 const { Header, Content } = Layout
@@ -32,7 +32,7 @@ const MainView = () => {
     token: { colorBgContainer }
   } = theme.useToken()
 
-  const { modbusConnected } = useContext(ModbusConnectionContext)
+  const modbusConnected = useModbusStore((s) => s.modbusConnected)
   const { darkMode, setDarkMode } = useContext(DarkModeContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showUpdatedAlert, setShowUpdatedAlert] = useState(false)

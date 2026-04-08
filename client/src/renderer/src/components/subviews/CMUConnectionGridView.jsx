@@ -1,10 +1,10 @@
-import { Card, Col, Row, Space } from 'antd'
 import React, { useContext } from 'react'
+import { Card, Col, Row, Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
-import { ConnectedCmusContext } from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 
 const CMUConnectionGridView = ({ title = 'CMU Connections', render }) => {
-  const { connectedCmus } = useContext(ConnectedCmusContext)
+  const connectedCmus = useModbusStore((s) => s.connectedCmus)
 
   const connectedCmuObjs = connectedCmus.map((connected, index) => {
     return {

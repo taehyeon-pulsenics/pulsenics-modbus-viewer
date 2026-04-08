@@ -4,3 +4,4 @@ Output
 *.env
 .aider*
 logs
+.vscode

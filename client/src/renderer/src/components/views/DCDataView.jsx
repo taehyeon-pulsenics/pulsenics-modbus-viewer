@@ -1,33 +1,16 @@
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { Button, Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import CMUDCDataModal from '../modals/CMUDCDataModal'
 import CMUConnectionGridView from '../subviews/CMUConnectionGridView'
-import { DcCmuVoltageContext, DcCurrentContext, DcProbeVoltageContext } from '../../contexts/modbus'
+import { useModbusStore } from '../../store/modbusStore'
 import CloudOff from '../icons/CloudOff'
 import Search from '../icons/Search'
 
 const DCDataView = () => {
-  const { dcCurrent } = useContext(DcCurrentContext)
-  const { dcProbeVoltage } = useContext(DcProbeVoltageContext)
-  const {
-    dcCmu1Voltage,
-    dcCmu2Voltage,
-    dcCmu3Voltage,
-    dcCmu4Voltage,
-    dcCmu5Voltage,
-    dcCmu6Voltage,
-    dcCmu7Voltage,
-    dcCmu8Voltage,
-    dcCmu9Voltage,
-    dcCmu10Voltage,
-    dcCmu11Voltage,
-    dcCmu12Voltage,
-    dcCmu13Voltage,
-    dcCmu14Voltage,
-    dcCmu15Voltage,
-    dcCmu16Voltage
-  } = useContext(DcCmuVoltageContext)
+  const dcCurrent = useModbusStore((s) => s.dcCurrent)
+  const dcProbeVoltage = useModbusStore((s) => s.dcProbeVoltage)
+  const dcCmuVoltages = useModbusStore((s) => s.dcCmuVoltages)
   const [selectedCMU, setSelectedCMU] = useState(null)
 
   /**
@@ -40,24 +23,7 @@ const DCDataView = () => {
     setSelectedCMU(null)
   }
   const isModalOpen = selectedCMU !== null
-  const voltagesForModal = [
-    dcCmu1Voltage,
-    dcCmu2Voltage,
-    dcCmu3Voltage,
-    dcCmu4Voltage,
-    dcCmu5Voltage,
-    dcCmu6Voltage,
-    dcCmu7Voltage,
-    dcCmu8Voltage,
-    dcCmu9Voltage,
-    dcCmu10Voltage,
-    dcCmu11Voltage,
-    dcCmu12Voltage,
-    dcCmu13Voltage,
-    dcCmu14Voltage,
-    dcCmu15Voltage,
-    dcCmu16Voltage
-  ][selectedCMU - 1]
+  const voltagesForModal = selectedCMU !== null ? dcCmuVoltages[selectedCMU - 1] : undefined
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>

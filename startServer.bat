@@ -5,7 +5,7 @@ setlocal EnableExtensions
 set "SERVICE_NAME=PulsenicsModbusViewerServer"
 set "SCRIPT_DIR=%~dp0"
 set "NSSM_EXE=%SCRIPT_DIR%nssm\nssm.exe"
-set "SERVER_EXE=%SCRIPT_DIR%server-js\dist\pulsenics-modbus-viewer-server.exe"
+set "SERVER_EXE=%SCRIPT_DIR%server\dist\pulsenics-modbus-viewer-server.exe"
 set "LOG_DIR=%SCRIPT_DIR%logs"
 
 :: === CHECK IF SERVICE IS ALREADY RUNNING ===
@@ -26,7 +26,7 @@ if not exist "%LOG_DIR%" (
 if errorlevel 1 (
     echo Installing service "%SERVICE_NAME%"…
     "%NSSM_EXE%" install "%SERVICE_NAME%" "%SERVER_EXE%"
-    "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%SCRIPT_DIR%server-js\dist"
+    "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%SCRIPT_DIR%server\dist"
     "%NSSM_EXE%" set "%SERVICE_NAME%" AppStdout  "%LOG_DIR%\service.log"
     "%NSSM_EXE%" set "%SERVICE_NAME%" AppStderr  "%LOG_DIR%\service-error.log"
 ) else (

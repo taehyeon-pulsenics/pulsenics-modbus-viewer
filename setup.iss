@@ -43,10 +43,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; nssm binary
 Source: "nssm\*"; DestDir: "{app}\nssm"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; config code
-Source: "server-js\config.example.json"; DestDir: "{app}\server-js"; Flags: ignoreversion
-Source: "server-js\config.json"; DestDir: "{app}\server-js"; Flags: ignoreversion
+Source: "server\config.example.json"; DestDir: "{app}\server"; Flags: ignoreversion
+Source: "server\config.json"; DestDir: "{app}\server"; Flags: ignoreversion
 ; server code
-Source: "server-js\dist\*"; DestDir: "{app}\server-js\dist"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "server\dist\*"; DestDir: "{app}\server\dist"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; client code
 Source: "client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; public

@@ -355,158 +355,122 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
 }
 
 /**
- * Polls all Modbus slaves for their coils, discrete inputs, holding registers, and input registers.
+ * Dispatches polled register data to the relevant actors.
  *
- * Iterates over each slave in the SLAVES array, checking if the Modbus client is open.
- * For each slave, it reads data in chunks for coils, discrete inputs, holding registers,
- * and input registers based on the configuration provided in `readConfig`.
+ * @param {any[]} data - The raw register array returned from a read operation.
+ * @param {Object} actorsConfig - The actors config block for this register type.
+ * @param {Object} actors - The global actors map.
+ */
+function dispatchToActors(data, actorsConfig, actors) {
+  for (const actorKey of Object.keys(actorsConfig)) {
+    const { address } = actorsConfig[actorKey];
+    let regs = [];
+    for (const { start, end } of address) {
+      regs = regs.concat(data.slice(start, end));
+    }
+    actors[actorKey].send({ type: 'POLL', regs });
+  }
+}
+
+/**
+ * Polls a single Modbus slave sequentially across all register types.
+ * Register types within a slave must remain sequential since they share one TCP client.
  *
- * Sends the polled data to the corresponding actors specified in the `actors` parameter.
- * Logs errors if any occur during the polling process.
+ * @param {Object} slave
+ * @param {Object} actors
+ * @returns {Promise<boolean>}
+ */
+async function pollSlave(slave, actors) {
+  const { name, client, readConfig } = slave;
+
+  if (!client || !client.isOpen) {
+    console.error(`Modbus client not open for slave: ${name}`);
+    return false;
+  }
+
+  try {
+    if (readConfig.coils.count > 0) {
+      const coils = await readInChunks(
+        client,
+        'readCoils',
+        readConfig.coils.start,
+        readConfig.coils.count,
+        LIMITS.coils,
+      );
+      if (readConfig.coils.actors)
+        dispatchToActors(coils, readConfig.coils.actors, actors);
+    }
+  } catch (err) {
+    console.error(`Error polling coils of ${name}:`, err.message);
+    return false;
+  }
+
+  try {
+    if (readConfig.discrete.count > 0) {
+      const discrete = await readInChunks(
+        client,
+        'readDiscreteInputs',
+        readConfig.discrete.start,
+        readConfig.discrete.count,
+        LIMITS.discrete,
+      );
+      if (readConfig.discrete.actors)
+        dispatchToActors(discrete, readConfig.discrete.actors, actors);
+    }
+  } catch (err) {
+    console.error(`Error polling discrete inputs of ${name}:`, err.message);
+    return false;
+  }
+
+  try {
+    if (readConfig.holdingRegs.count > 0) {
+      const holding = await readInChunks(
+        client,
+        'readHoldingRegisters',
+        readConfig.holdingRegs.start,
+        readConfig.holdingRegs.count,
+        LIMITS.holdingRegs,
+      );
+      if (readConfig.holdingRegs.actors)
+        dispatchToActors(holding, readConfig.holdingRegs.actors, actors);
+    }
+  } catch (err) {
+    console.error(`Error polling holding registers of ${name}:`, err.message);
+    return false;
+  }
+
+  try {
+    if (readConfig.inputRegs.count > 0) {
+      const inputs = await readInChunks(
+        client,
+        'readInputRegisters',
+        readConfig.inputRegs.start,
+        readConfig.inputRegs.count,
+        LIMITS.inputRegs,
+      );
+      if (readConfig.inputRegs.actors)
+        dispatchToActors(inputs, readConfig.inputRegs.actors, actors);
+    }
+  } catch (err) {
+    console.error(`Error polling input registers of ${name}:`, err.message);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Polls all Modbus slaves in parallel. Each slave has its own TCP client so
+ * concurrent reads across slaves are safe.
  *
- * @param {Object} actors - An object containing actor instances to which the polled data is sent.
- * @returns {Promise<boolean>} - Returns a promise that resolves to true if polling is successful,
- *                               or false if an error occurs.
+ * @param {Object} actors
+ * @returns {Promise<boolean>}
  */
 async function pollAllSlaves(actors) {
-  for (const slave of SLAVES) {
-    const { name, client, readConfig } = slave;
-
-    if (!!client && client.isOpen) {
-      try {
-        // Coils
-        const coils =
-          readConfig.coils.count > 0
-            ? await readInChunks(
-                client,
-                'readCoils',
-                readConfig.coils.start,
-                readConfig.coils.count,
-                LIMITS.coils
-              )
-            : null;
-
-        if (coils && readConfig.coils.actors) {
-          for (const actor of Object.keys(readConfig.coils.actors)) {
-            const actorDetail = readConfig.coils.actors[actor];
-            const addresses = actorDetail.address;
-            let regs = [];
-            for (const { start, end } of addresses) {
-              regs = regs.concat(coils.slice(start, end));
-            }
-            actors[actor].send({
-              type: 'POLL',
-              regs,
-            });
-          }
-        }
-      } catch (err) {
-        console.error(`Error polling coils of ${name}:`, err.message);
-
-        return false;
-      }
-
-      // Discrete inputs
-      try {
-        const discrete =
-          readConfig.discrete.count > 0
-            ? await readInChunks(
-                client,
-                'readDiscreteInputs',
-                readConfig.discrete.start,
-                readConfig.discrete.count,
-                LIMITS.discrete
-              )
-            : null;
-
-        if (discrete && readConfig.discrete.actors) {
-          for (const actor of Object.keys(readConfig.discrete.actors)) {
-            const actorDetail = readConfig.discrete.actors[actor];
-            const addresses = actorDetail.address;
-            let regs = [];
-            for (const { start, end } of addresses) {
-              regs = regs.concat(discrete.slice(start, end));
-            }
-            actors[actor].send({
-              type: 'POLL',
-              regs,
-            });
-          }
-        }
-      } catch (err) {
-        console.error(`Error polling discrete inputs of ${name}:`, err.message);
-        return false;
-      }
-
-      try {
-        // Holding registers
-        const holding =
-          readConfig.holdingRegs.count > 0
-            ? await readInChunks(
-                client,
-                'readHoldingRegisters',
-                readConfig.holdingRegs.start,
-                readConfig.holdingRegs.count,
-                LIMITS.holdingRegs
-              )
-            : null;
-
-        if (holding && readConfig.holdingRegs.actors) {
-          for (const actor of Object.keys(readConfig.holdingRegs.actors)) {
-            const actorDetail = readConfig.holdingRegs.actors[actor];
-            const addresses = actorDetail.address;
-            let regs = [];
-            for (const { start, end } of addresses) {
-              regs = regs.concat(holding.slice(start, end));
-            }
-            actors[actor].send({
-              type: 'POLL',
-              regs,
-            });
-          }
-        }
-      } catch (err) {
-        console.error(`Error holding registers of ${name}:`, err.message);
-        return false;
-      }
-
-      try {
-        // Input registers
-        const inputs =
-          readConfig.inputRegs.count > 0
-            ? await readInChunks(
-                client,
-                'readInputRegisters',
-                readConfig.inputRegs.start,
-                readConfig.inputRegs.count,
-                LIMITS.inputRegs
-              )
-            : null;
-
-        if (inputs && readConfig.inputRegs.actors) {
-          for (const actor of Object.keys(readConfig.inputRegs.actors)) {
-            const actorDetail = readConfig.inputRegs.actors[actor];
-            const addresses = actorDetail.address;
-            let regs = [];
-            for (const { start, end } of addresses) {
-              regs = regs.concat(inputs.slice(start, end));
-            }
-            actors[actor].send({
-              type: 'POLL',
-              regs,
-            });
-          }
-        }
-      } catch (err) {
-        console.error(`Error polling input registers of ${name}:`, err.message);
-        return false;
-      }
-    } else {
-      console.error('Modbus server not opened');
-      return false;
-    }
-  }
-  return true;
+  const results = await Promise.all(
+    SLAVES.map((slave) => pollSlave(slave, actors)),
+  );
+  return results.every(Boolean);
 }
 
 /**
@@ -571,7 +535,7 @@ function withTimeout(promise, ms) {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), ms)
+      setTimeout(() => reject(new Error('Timeout')), ms),
     ),
   ]);
 }

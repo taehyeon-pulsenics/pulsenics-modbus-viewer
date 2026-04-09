@@ -227,6 +227,87 @@ const SLAVES = [
     },
   },
   {
+    name: 'AC 2',
+    unitId: 3,
+    readConfig: {
+      coils: { start: 0, count: 0 },
+      discrete: { start: 0, count: 0 },
+      holdingRegs: { start: 0, count: 0 },
+      inputRegs: {
+        start: 0,
+        count: 47284,
+        actors: {
+          [MODBUS_STATE.AC.CMU_5_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (1 - 1), end: 1204 + 11520 * 1 }],
+          },
+          [MODBUS_STATE.AC.CMU_6_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (2 - 1), end: 1204 + 11520 * 2 }],
+          },
+          [MODBUS_STATE.AC.CMU_7_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (3 - 1), end: 1204 + 11520 * 3 }],
+          },
+          [MODBUS_STATE.AC.CMU_8_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (4 - 1), end: 1204 + 11520 * 4 }],
+          },
+        },
+      },
+    },
+  },
+  {
+    name: 'AC 3',
+    unitId: 4,
+    readConfig: {
+      coils: { start: 0, count: 0 },
+      discrete: { start: 0, count: 0 },
+      holdingRegs: { start: 0, count: 0 },
+      inputRegs: {
+        start: 0,
+        count: 47284,
+        actors: {
+          [MODBUS_STATE.AC.CMU_9_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (1 - 1), end: 1204 + 11520 * 1 }],
+          },
+          [MODBUS_STATE.AC.CMU_10_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (2 - 1), end: 1204 + 11520 * 2 }],
+          },
+          [MODBUS_STATE.AC.CMU_11_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (3 - 1), end: 1204 + 11520 * 3 }],
+          },
+          [MODBUS_STATE.AC.CMU_12_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (4 - 1), end: 1204 + 11520 * 4 }],
+          },
+        },
+      },
+    },
+  },
+  {
+    name: 'AC 4',
+    unitId: 5,
+    readConfig: {
+      coils: { start: 0, count: 0 },
+      discrete: { start: 0, count: 0 },
+      holdingRegs: { start: 0, count: 0 },
+      inputRegs: {
+        start: 0,
+        count: 47284,
+        actors: {
+          [MODBUS_STATE.AC.CMU_13_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (1 - 1), end: 1204 + 11520 * 1 }],
+          },
+          [MODBUS_STATE.AC.CMU_14_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (2 - 1), end: 1204 + 11520 * 2 }],
+          },
+          [MODBUS_STATE.AC.CMU_15_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (3 - 1), end: 1204 + 11520 * 3 }],
+          },
+          [MODBUS_STATE.AC.CMU_16_VOLTAGE]: {
+            address: [{ start: 1204 + 11520 * (4 - 1), end: 1204 + 11520 * 4 }],
+          },
+        },
+      },
+    },
+  },
+  {
     name: 'Miscellaneous',
     unitId: 6,
     readConfig: {

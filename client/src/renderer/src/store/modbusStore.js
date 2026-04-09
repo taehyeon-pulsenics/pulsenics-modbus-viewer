@@ -71,7 +71,7 @@ export const useModbusStore = create((set) => ({
   setAcProbeVoltagePhase: (v) => set({ acProbeVoltagePhase: v }),
 
   // ac cmu voltages: array of 4, each { magnitude: [][], phase: [][] }
-  acCmuVoltages: Array(4).fill({ magnitude: [], phase: [] }),
+  acCmuVoltages: Array(16).fill({ magnitude: [], phase: [] }),
   setAcCmuVoltage: (index, magnitude, phase) =>
     set((s) => {
       const next = [...s.acCmuVoltages]

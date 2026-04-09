@@ -136,6 +136,66 @@ const schema = {
       nRegisters:
         N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
     },
+    {
+      name: 'CMU_5_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_6_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_7_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_8_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_9_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_10_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_11_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_12_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_13_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_14_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_15_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
+    {
+      name: 'CMU_16_VOLTAGE',
+      nRegisters:
+        N_MAX_FREQUENCIES * N_REGISTERS_PER_FLOAT_32 * 2 * N_CHANNELS_PER_CMU,
+    },
   ],
   MISC: [
     { name: 'FAULTS', nRegisters: N_FAULTS },
@@ -173,18 +233,18 @@ const MODBUS_SCHEMA = Object.fromEntries(
       schemas.map((schema) => [
         schema.name,
         { name: `${section}/${schema.name}`, nRegisters: schema.nRegisters },
-      ])
+      ]),
     ),
-  ])
+  ]),
 );
 
 const MODBUS_STATE = Object.fromEntries(
   Object.entries(schema).map(([section, schemas]) => [
     section,
     Object.fromEntries(
-      schemas.map((schema) => [schema.name, `${section}/${schema.name}`])
+      schemas.map((schema) => [schema.name, `${section}/${schema.name}`]),
     ),
-  ])
+  ]),
 );
 
 /**

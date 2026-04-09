@@ -140,8 +140,8 @@ export function SocketProvider({ children }) {
       setAcProbeVoltagePhase(phases)
     })
 
-    // AC CMU voltages — CMU 1-4
-    for (let i = 0; i < 4; i++) {
+    // AC CMU voltages — one handler per CMU, writes into array by index
+    for (let i = 0; i < 16; i++) {
       const idx = i
       const key = MODBUS_STATE.AC[`CMU_${idx + 1}_VOLTAGE`]
       s.on(key, (data) => {

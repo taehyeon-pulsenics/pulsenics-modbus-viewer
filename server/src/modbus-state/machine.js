@@ -16,7 +16,7 @@ const createModbusMachine = (id, nRegisters, io) =>
 
             if (newRegs.length < nRegisters) {
               throw new Error(
-                'Given number of registers are less than specified nRegisters'
+                `[${id}] Given number of registers are less than specified nRegisters`,
               );
             }
 

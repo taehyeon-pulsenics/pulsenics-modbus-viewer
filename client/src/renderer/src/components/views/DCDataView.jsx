@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button, Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import CMUDCDataModal from '../modals/CMUDCDataModal'
@@ -13,15 +13,22 @@ const DCDataView = () => {
   const dcCmuVoltages = useModbusStore((s) => s.dcCmuVoltages)
   const [selectedCMU, setSelectedCMU] = useState(null)
 
-  /**
-   * Modal Control Functions
-   */
-  const showModal = (cmuNumber) => {
+  const showModal = useCallback((cmuNumber) => {
     setSelectedCMU(cmuNumber)
-  }
-  const handleCancel = () => {
+  }, [])
+  const handleCancel = useCallback(() => {
     setSelectedCMU(null)
-  }
+  }, [])
+
+  const renderCMUConnection = useCallback(
+    (value) =>
+      !!value.connected ? (
+        <Button type="primary" icon={<Search />} onClick={() => showModal(value.cmuNumber)} />
+      ) : (
+        <Button type="dashed" icon={<CloudOff />} onClick={() => showModal(value.cmuNumber)} />
+      ),
+    [showModal]
+  )
   const isModalOpen = selectedCMU !== null
   const voltagesForModal = selectedCMU !== null ? dcCmuVoltages[selectedCMU - 1] : undefined
 
@@ -39,16 +46,7 @@ const DCDataView = () => {
         <p>Current: {dcCurrent}A</p>
         <p>Voltage: {dcProbeVoltage}V</p>
       </CollapsibleCard>
-      <CMUConnectionGridView
-        render={(value) =>
-          !!value.connected ? (
-            <Button type="primary" icon={<Search />} onClick={() => showModal(value.cmuNumber)} />
-          ) : (
-            <Button type="dashed" icon={<CloudOff />} onClick={() => showModal(value.cmuNumber)} />
-          )
-        }
-        title="View CMU Voltages"
-      />
+      <CMUConnectionGridView render={renderCMUConnection} title="View CMU Voltages" />
       <CMUDCDataModal
         title={`CMU ${selectedCMU} Voltage Reading`}
         voltages={voltagesForModal}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, memo, useState, useContext } from 'react'
+import React, { useEffect, useRef, memo, useState, useContext, useMemo } from 'react'
 import Plot from 'react-plotly.js'
 import { DarkModeContext } from '../../contexts/DarkModeContext'
 import { geekblue, gray } from '@ant-design/colors'
@@ -73,6 +73,17 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
     }))
   }, [darkMode, chartTitle, yAxisLabel])
 
+  const plotData = useMemo(
+    () =>
+      measurements.map((m) => ({
+        x: frequencies,
+        y: m,
+        type: 'scatter',
+        mode: 'lines+markers'
+      })),
+    [frequencies, measurements]
+  )
+
   return (
     <div
       key={chartId}
@@ -80,15 +91,7 @@ const BodePlot = ({ frequencies, measurements, chartId, chartTitle, yAxisLabel }
       style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}
       ref={chartRef}
     >
-      <Plot
-        data={measurements.map((m) => ({
-          x: frequencies,
-          y: m,
-          type: 'scatter',
-          mode: 'lines+markers'
-        }))}
-        layout={layout}
-      />
+      <Plot data={plotData} layout={layout} />
     </div>
   )
 }

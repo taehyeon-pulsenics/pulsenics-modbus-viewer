@@ -1,30 +1,34 @@
 import { Table } from 'antd'
+import { memo, useMemo } from 'react'
 
 const NumberTable = ({ numbers, nColumns = 8, showHeader = false, columnPrefix = 'Column' }) => {
-  // Split numbers into rows with nColumns numbers per row.
-  const rows = []
-  for (let i = 0; i < numbers.length; i += nColumns) {
-    rows.push(numbers.slice(i, i + nColumns).map(num => typeof num === 'number' ? parseFloat(num.toFixed(6)) : num))
-  }
-
-  // Prepare the data source for the table.
-  const dataSource = rows.map((row, rowIndex) => {
-    // Create an object for each row.
-    const rowData = { key: rowIndex }
-    // Map each of the nColumns columns.
-    for (let colIndex = 0; colIndex < nColumns; colIndex++) {
-      // If a value does not exist for the column, use an empty string.
-      rowData[`col${colIndex}`] = row[colIndex] !== undefined ? row[colIndex] : ''
+  const dataSource = useMemo(() => {
+    const rows = []
+    for (let i = 0; i < numbers.length; i += nColumns) {
+      rows.push(
+        numbers
+          .slice(i, i + nColumns)
+          .map((num) => (typeof num === 'number' ? parseFloat(num.toFixed(6)) : num))
+      )
     }
-    return rowData
-  })
+    return rows.map((row, rowIndex) => {
+      const rowData = { key: rowIndex }
+      for (let colIndex = 0; colIndex < nColumns; colIndex++) {
+        rowData[`col${colIndex}`] = row[colIndex] !== undefined ? row[colIndex] : ''
+      }
+      return rowData
+    })
+  }, [numbers, nColumns])
 
-  // Define the nColumns column definitions for the table.
-  const columns = Array.from({ length: nColumns }, (_, index) => ({
-    title: `${columnPrefix} ${index + 1}`,
-    dataIndex: `col${index}`,
-    key: `col${index}`
-  }))
+  const columns = useMemo(
+    () =>
+      Array.from({ length: nColumns }, (_, index) => ({
+        title: `${columnPrefix} ${index + 1}`,
+        dataIndex: `col${index}`,
+        key: `col${index}`
+      })),
+    [nColumns, columnPrefix]
+  )
 
   return (
     <Table
@@ -38,4 +42,4 @@ const NumberTable = ({ numbers, nColumns = 8, showHeader = false, columnPrefix =
   )
 }
 
-export default NumberTable
+export default memo(NumberTable)

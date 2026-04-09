@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useModbusStore } from '../../store/modbusStore'
 import { Button, Space } from 'antd'
 import ACPlotView from '../subviews/ACPlotView'
@@ -19,23 +19,24 @@ const ACDataView = () => {
 
   const [selectedCMU, setSelectedCMU] = useState(null)
 
-  const showModal = (cmuNumber) => setSelectedCMU(cmuNumber)
-  const handleCancel = () => setSelectedCMU(null)
+  const showModal = useCallback((cmuNumber) => setSelectedCMU(cmuNumber), [])
+  const handleCancel = useCallback(() => setSelectedCMU(null), [])
+
+  const renderCMUConnection = useCallback(
+    (value) =>
+      !!value.connected ? (
+        <Button type="primary" icon={<Search />} onClick={() => showModal(value.cmuNumber)} />
+      ) : (
+        <Button type="dashed" icon={<CloudOff />} onClick={() => showModal(value.cmuNumber)} />
+      ),
+    [showModal]
+  )
   const isModalOpen = selectedCMU !== null
   const selectedCmuData = selectedCMU !== null ? acCmuVoltages[selectedCMU - 1] : null
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CMUConnectionGridView
-        title="View CMU Data"
-        render={(value) =>
-          !!value.connected ? (
-            <Button type="primary" icon={<Search />} onClick={() => showModal(value.cmuNumber)} />
-          ) : (
-            <Button type="dashed" icon={<CloudOff />} onClick={() => showModal(value.cmuNumber)} />
-          )
-        }
-      />
+      <CMUConnectionGridView title="View CMU Data" render={renderCMUConnection} />
       <ACPlotView
         frequencies={freqs}
         currMags={acCurrentMagnitude}

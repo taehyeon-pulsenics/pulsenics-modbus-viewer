@@ -1,5 +1,5 @@
 import { WidthProvider, Responsive } from 'react-grid-layout'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import BodePlot from './BodePlot'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
@@ -21,23 +21,29 @@ const ACPlots = ({
   impMagsList,
   impPhasesList
 }) => {
-  const lgLayout = [
-    { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
-    { i: 'currPhases', x: 0, y: 1, w: 1, h: 1 },
-    { i: 'volMagsList', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
-    { i: 'impMagsList', x: 2, y: 0, w: 1, h: 1 },
-    { i: 'impPhasesList,', x: 2, y: 1, w: 1, h: 1 }
-  ]
+  const lgLayout = useMemo(
+    () => [
+      { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
+      { i: 'currPhases', x: 0, y: 1, w: 1, h: 1 },
+      { i: 'volMagsList', x: 1, y: 0, w: 1, h: 1 },
+      { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
+      { i: 'impMagsList', x: 2, y: 0, w: 1, h: 1 },
+      { i: 'impPhasesList,', x: 2, y: 1, w: 1, h: 1 }
+    ],
+    []
+  )
 
-  const smLayout = [
-    { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
-    { i: 'currPhases', x: 1, y: 0, w: 1, h: 1 },
-    { i: 'volMagsList', x: 0, y: 1, w: 1, h: 1 },
-    { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
-    { i: 'impMagsList', x: 0, y: 2, w: 1, h: 1 },
-    { i: 'impPhasesList,', x: 1, y: 2, w: 1, h: 1 }
-  ]
+  const smLayout = useMemo(
+    () => [
+      { i: 'currMags', x: 0, y: 0, w: 1, h: 1 },
+      { i: 'currPhases', x: 1, y: 0, w: 1, h: 1 },
+      { i: 'volMagsList', x: 0, y: 1, w: 1, h: 1 },
+      { i: 'volPhasesList', x: 1, y: 1, w: 1, h: 1 },
+      { i: 'impMagsList', x: 0, y: 2, w: 1, h: 1 },
+      { i: 'impPhasesList,', x: 1, y: 2, w: 1, h: 1 }
+    ],
+    []
+  )
 
   const gridStyle = {
     width: '100%',

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Space } from 'antd'
 import CollapsibleCard from '../cards/CollapsibleCard'
 import { useSocket } from '../../contexts/SocketContext'
@@ -24,9 +24,14 @@ const ProbeStatusView = () => {
   const metadata = useModbusStore((s) => s.metadata)
   const { config } = useSocket()
 
+  const renderCMUConnection = useCallback(
+    (value) => (!!value.connected ? <Cloud /> : <CloudOff />),
+    []
+  )
+
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-      <CMUConnectionGridView render={(value) => (!!value.connected ? <Cloud /> : <CloudOff />)} />
+      <CMUConnectionGridView render={renderCMUConnection} />
       <CollapsibleCard size="small" title="AC Coil">
         <BooleanList
           dataSource={[

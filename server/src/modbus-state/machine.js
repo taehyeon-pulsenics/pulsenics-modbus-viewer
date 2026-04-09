@@ -32,8 +32,9 @@ const createModbusMachine = (id, nRegisters, io) =>
         }),
       },
       RETRIEVE: {
-        actions: ({ context }) => {
-          io && io.emit(id, convertRegistersToBuffer(context.regs));
+        actions: ({ context, event }) => {
+          const target = event.socket ?? io;
+          target.emit(id, convertRegistersToBuffer(context.regs));
         },
       },
     },

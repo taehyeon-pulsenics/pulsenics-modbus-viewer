@@ -77,6 +77,12 @@ app.post('/modbus-data', async (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('a user connected');
+
+  // Immediately push current state to the newly connected client
+  for (const actor of Object.values(actors)) {
+    actor.send({ type: 'RETRIEVE', socket });
+  }
+
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });

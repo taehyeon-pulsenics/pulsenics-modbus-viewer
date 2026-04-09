@@ -21,12 +21,12 @@ const io = new Server(server, {
 
 const { actors } = initModbusStates(io);
 
-let timeout = pollModbus(CONFIG.probeIp, 502, actors, io);
+let intervals = pollModbus(CONFIG.probeIp, 502, actors, io);
 
 app.use(
   cors({
     origin: 'http://localhost:5173',
-  })
+  }),
 );
 app.use(express.json());
 
@@ -59,7 +59,7 @@ app.post('/config', async (req, res) => {
   const targetPath = path.join(baseDir, '../config.json');
   fs.writeFileSync(targetPath, JSON.stringify(CONFIG, null, 2), 'utf-8');
 
-  timeout = pollModbus(probeIp, 502, actors, io, timeout);
+  intervals = pollModbus(probeIp, 502, actors, io, intervals);
 
   res.sendStatus(204);
 });

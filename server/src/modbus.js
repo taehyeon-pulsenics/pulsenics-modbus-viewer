@@ -1,5 +1,10 @@
 const ModbusRTU = require('modbus-serial');
 const { MODBUS_STATE } = require('./modbus-state');
+const {
+  CHUNK_TIMEOUT_MS,
+  SLAVE_TIMEOUT_MS,
+  POLL_INTERVAL_MS,
+} = require('./constants');
 
 // Modbus protocol limits
 const LIMITS = {
@@ -15,6 +20,7 @@ const SLAVES = [
   {
     name: 'DC',
     unitId: 1,
+    timeoutMs: SLAVE_TIMEOUT_MS.DC,
     readConfig: {
       coils: { start: 0, count: 1 },
       discrete: { start: 0, count: 0 },
@@ -160,6 +166,7 @@ const SLAVES = [
   {
     name: 'AC 1',
     unitId: 2,
+    timeoutMs: SLAVE_TIMEOUT_MS.AC,
     readConfig: {
       coils: {
         start: 0,
@@ -229,6 +236,7 @@ const SLAVES = [
   {
     name: 'AC 2',
     unitId: 3,
+    timeoutMs: SLAVE_TIMEOUT_MS.AC,
     readConfig: {
       coils: { start: 0, count: 0 },
       discrete: { start: 0, count: 0 },
@@ -256,6 +264,7 @@ const SLAVES = [
   {
     name: 'AC 3',
     unitId: 4,
+    timeoutMs: SLAVE_TIMEOUT_MS.AC,
     readConfig: {
       coils: { start: 0, count: 0 },
       discrete: { start: 0, count: 0 },
@@ -283,6 +292,7 @@ const SLAVES = [
   {
     name: 'AC 4',
     unitId: 5,
+    timeoutMs: SLAVE_TIMEOUT_MS.AC,
     readConfig: {
       coils: { start: 0, count: 0 },
       discrete: { start: 0, count: 0 },
@@ -310,6 +320,7 @@ const SLAVES = [
   {
     name: 'Miscellaneous',
     unitId: 6,
+    timeoutMs: SLAVE_TIMEOUT_MS.MISC,
     readConfig: {
       coils: {
         start: 0,
@@ -421,15 +432,30 @@ async function readInChunks(client, fnName, start, count, chunkLimit) {
   const readFn = client[fnName].bind(client);
   const result = [];
   let offset = 0;
+  let maxChunkMs = 0;
+  let totalMs = 0;
+  let chunkCount = 0;
 
   while (offset < count) {
     const thisCount = Math.min(chunkLimit, count - offset);
     const addr = start + offset;
 
-    // e.g. client.readCoils(addr, thisCount)
-    const resp = await withTimeout(readFn(addr, thisCount), 5000);
+    const t0 = Date.now();
+    const resp = await withTimeout(readFn(addr, thisCount), CHUNK_TIMEOUT_MS);
+    const elapsed = Date.now() - t0;
+
+    if (elapsed > maxChunkMs) maxChunkMs = elapsed;
+    totalMs += elapsed;
+    chunkCount++;
+
     result.push(...resp.data);
     offset += thisCount;
+  }
+
+  if (chunkCount > 0) {
+    console.debug(
+      `[readInChunks] ${fnName} | chunks: ${chunkCount} | avg: ${Math.round(totalMs / chunkCount)}ms | max: ${maxChunkMs}ms | total: ${totalMs}ms`,
+    );
   }
 
   return result;
@@ -468,6 +494,8 @@ async function pollSlave(slave, actors) {
     console.error(`Modbus client not open for slave: ${name}`);
     return false;
   }
+
+  const t0 = Date.now();
 
   try {
     if (readConfig.coils.count > 0) {
@@ -537,60 +565,109 @@ async function pollSlave(slave, actors) {
     return false;
   }
 
+  console.debug(`[pollSlave] ${name} completed in ${Date.now() - t0}ms`);
   return true;
 }
 
+const SLAVE_GROUPS = {
+  DC: SLAVES.filter((s) => s.name === 'DC'),
+  AC: SLAVES.filter((s) => s.name.startsWith('AC')),
+  MISC: SLAVES.filter((s) => s.name === 'Miscellaneous'),
+};
+
 /**
- * Polls all Modbus slaves in parallel. Each slave has its own TCP client so
- * concurrent reads across slaves are safe.
+ * Polls a group of slaves in parallel.
  *
+ * @param {Object[]} slaves
  * @param {Object} actors
  * @returns {Promise<boolean>}
  */
-async function pollAllSlaves(actors) {
+async function pollSlaveGroup(slaves, actors) {
   const results = await Promise.all(
-    SLAVES.map((slave) => pollSlave(slave, actors)),
+    slaves.map((slave) =>
+      withTimeout(pollSlave(slave, actors), slave.timeoutMs).catch((e) => {
+        console.error(`Slave ${slave.name} timed out or failed:`, e.message);
+        return false;
+      }),
+    ),
   );
   return results.every(Boolean);
 }
 
 /**
- * Polls Modbus devices at a specified interval, managing connections and broadcasting status.
+ * Creates a self-gating poll loop for a slave group.
+ * A busy-flag prevents overlapping cycles if a poll takes longer than the interval.
  *
- * @param {string} host - The host address of the Modbus server.
- * @param {number} port - The port number of the Modbus server.
- * @param {Array} actors - An array of Modbus actors to poll.
- * @param {Object} io - The socket.io instance for broadcasting connection status.
- * @param {number} interval - The interval ID to clear before setting a new one.
- * @returns {NodeJS.Timeout} - The new interval ID for the polling process.
+ * @param {Object[]} slaves
+ * @param {Object} actors
+ * @param {Object} io
+ * @param {string} host
+ * @param {number} port
+ * @param {number} intervalMs
+ * @returns {NodeJS.Timeout}
  */
-function pollModbus(host, port, actors, io, interval) {
-  clearInterval(interval);
+function startGroupInterval(slaves, actors, io, host, port, intervalMs) {
+  let busy = false;
+  return setInterval(() => {
+    if (!busy) {
+      busy = true;
+      pollSlaveGroup(slaves, actors)
+        .then((ok) => {
+          broadcast_connection(io, ok);
+          if (!ok) initModbusConnections(host, port);
+        })
+        .catch((e) => console.error(e))
+        .finally(() => {
+          busy = false;
+        });
+    }
+  }, intervalMs);
+}
+
+/**
+ * Starts per-group Modbus poll loops and returns their interval IDs.
+ * Pass the previous intervals to clear them before starting fresh (e.g. on IP change).
+ *
+ * @param {string} host
+ * @param {number} port
+ * @param {Object} actors
+ * @param {Object} io
+ * @param {{ dc?: NodeJS.Timeout, ac?: NodeJS.Timeout, misc?: NodeJS.Timeout }} [prevIntervals]
+ * @returns {{ dc: NodeJS.Timeout, ac: NodeJS.Timeout, misc: NodeJS.Timeout }}
+ */
+function pollModbus(host, port, actors, io, prevIntervals = {}) {
+  clearInterval(prevIntervals.dc);
+  clearInterval(prevIntervals.ac);
+  clearInterval(prevIntervals.misc);
 
   initModbusConnections(host, port);
 
-  let busy = false;
-
-  const newInterval = setInterval(() => {
-    if (!busy) {
-      busy = true;
-      pollAllSlaves(actors)
-        .then((v) => {
-          if (v) {
-            broadcast_connection(io, true);
-          } else {
-            broadcast_connection(io, false);
-            initModbusConnections(host, port);
-          }
-          busy = false;
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    }
-  }, 1000);
-
-  return newInterval;
+  return {
+    dc: startGroupInterval(
+      SLAVE_GROUPS.DC,
+      actors,
+      io,
+      host,
+      port,
+      POLL_INTERVAL_MS.DC,
+    ),
+    ac: startGroupInterval(
+      SLAVE_GROUPS.AC,
+      actors,
+      io,
+      host,
+      port,
+      POLL_INTERVAL_MS.AC,
+    ),
+    misc: startGroupInterval(
+      SLAVE_GROUPS.MISC,
+      actors,
+      io,
+      host,
+      port,
+      POLL_INTERVAL_MS.MISC,
+    ),
+  };
 }
 
 /**

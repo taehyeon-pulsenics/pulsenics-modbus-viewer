@@ -25,7 +25,7 @@ let intervals = pollModbus(CONFIG.probeIp, 502, actors, io);
 
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: 'http://localhost:47822',
   }),
 );
 app.use(express.json());
@@ -88,6 +88,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server listening on port 3000');
+server.listen(47822, () => {
+  console.log('Server listening on port 47822');
 });

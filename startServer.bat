@@ -4,15 +4,14 @@ setlocal EnableExtensions
 :: === CONFIGURATION ===
 set "SERVICE_NAME=PulsenicsModbusViewerServer"
 set "SCRIPT_DIR=%~dp0"
-set "NSSM_EXE=%SCRIPT_DIR%nssm\nssm.exe"
 set "SERVER_EXE=%SCRIPT_DIR%server\dist\pulsenics-modbus-viewer-server.exe"
 set "LOG_DIR=%SCRIPT_DIR%logs"
 
 :: === CHECK IF SERVICE IS ALREADY RUNNING ===
-call "%SCRIPT_DIR%checkService.bat" "%SERVICE_NAME%"
-if %ERRORLEVEL% NEQ 0 (
-    :: 1 = missing arg, 2+ = already running
-    exit /b %ERRORLEVEL%
+sc query "%SERVICE_NAME%" | findstr /I "RUNNING" >nul
+if %ERRORLEVEL% EQU 0 (
+    echo Service "%SERVICE_NAME%" is already running.
+    exit /b 2
 )
 
 :: === PREPARE LOG DIRECTORY ===
@@ -21,20 +20,19 @@ if not exist "%LOG_DIR%" (
     mkdir "%LOG_DIR%"
 )
 
-:: === INSTALL SERVICE IF MISSING ===
-"%NSSM_EXE%" status "%SERVICE_NAME%" >nul 2>&1
-if errorlevel 1 (
-    echo Installing service "%SERVICE_NAME%"…
-    "%NSSM_EXE%" install "%SERVICE_NAME%" "%SERVER_EXE%"
-    "%NSSM_EXE%" set "%SERVICE_NAME%" AppDirectory "%SCRIPT_DIR%server\dist"
-    "%NSSM_EXE%" set "%SERVICE_NAME%" AppStdout  "%LOG_DIR%\service.log"
-    "%NSSM_EXE%" set "%SERVICE_NAME%" AppStderr  "%LOG_DIR%\service-error.log"
+:: === CREATE SERVICE IF MISSING, OR UPDATE BINARY PATH IF ALREADY EXISTS ===
+sc query "%SERVICE_NAME%" >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Installing service "%SERVICE_NAME%"...
+    sc create "%SERVICE_NAME%" binPath= "\"%SERVER_EXE%\"" start= auto DisplayName= "%SERVICE_NAME%"
+    timeout /t 1 /nobreak >nul
+    sc description "%SERVICE_NAME%" "Pulsenics Modbus Viewer backend server"
 ) else (
-    echo Service "%SERVICE_NAME%" already installed, skipping install.
+    echo Service "%SERVICE_NAME%" already installed, updating binary path...
+    sc config "%SERVICE_NAME%" binPath= "\"%SERVER_EXE%\""
 )
 
-:: === START SERVER ===
-"%NSSM_EXE%" start "%SERVICE_NAME%"
+:: === START SERVICE ===
+sc start "%SERVICE_NAME%"
 
-popd
 endlocal

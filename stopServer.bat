@@ -3,10 +3,8 @@ setlocal EnableExtensions
 
 :: === CONFIGURATION ===
 set "SERVICE_NAME=PulsenicsModbusViewerServer"
-set "SCRIPT_DIR=%~dp0"
-set "NSSM_EXE=%SCRIPT_DIR%nssm\nssm.exe"
 
-:: === SHUT DOWN AND CLEAN UP ===
-"%NSSM_EXE%" stop "%SERVICE_NAME%"
+:: === STOP SERVICE ===
+sc stop "%SERVICE_NAME%" >nul 2>&1
 
 endlocal

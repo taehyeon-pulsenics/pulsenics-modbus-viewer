@@ -1,8 +1,7 @@
-@echo off 
+@echo off
 
-set "NSSM_PATH=%~dp0nssm\nssm.exe"
-set "STOP_CLIENT_BAT=%SCRIPTDIR%stopClient.bat"
-set "STOP_SERVER_BAT=%SCRIPTDIR%stopServer.bat"
+set "STOP_CLIENT_BAT=%~dp0stopClient.bat"
+set "STOP_SERVER_BAT=%~dp0stopServer.bat"
 
 :: stop service
 call "%STOP_SERVER_BAT%"

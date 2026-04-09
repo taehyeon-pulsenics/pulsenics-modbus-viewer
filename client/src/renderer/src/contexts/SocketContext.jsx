@@ -46,7 +46,7 @@ export function SocketProvider({ children }) {
   } = useModbusStore()
 
   const fetchConfig = async () => {
-    const { data } = await axios.get('http://localhost:3000/config')
+    const { data } = await axios.get('http://localhost:47822/config')
     if (data) setConfig(data)
   }
 
@@ -55,7 +55,7 @@ export function SocketProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    const s = io('http://localhost:3000')
+    const s = io('http://localhost:47822')
     setSocket(s)
 
     s.on('connect', () => console.log('Connected to backend WebSocket server'))
@@ -203,11 +203,11 @@ export function SocketProvider({ children }) {
 
   const changeConfig = (cfg) => {
     setConfig(cfg)
-    axios.post('http://localhost:3000/config', cfg)
+    axios.post('http://localhost:47822/config', cfg)
   }
 
   const triggerDataBroadcast = () => {
-    axios.post('http://localhost:3000/modbus-data')
+    axios.post('http://localhost:47822/modbus-data')
   }
 
   return (

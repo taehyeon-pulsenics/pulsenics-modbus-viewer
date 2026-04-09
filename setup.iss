@@ -3,12 +3,7 @@
 #define MyAppId "B4C353AE-41B1-4934-8E46-A217453778D9"
 #define MyAppPublisher "Pulsenics Inc."
 #define MyAppURL "https://www.pulsenics.com/"
-#define MyAppExeName "Pulsenics Modbus Viewer.exe"
-#define MyClientExeName "pulsenics-modbus-viewer-app.exe"
-#define MyServerExeName "main.exe"
-#define MyAppAssocName MyAppName + " File"
-#define MyAppAssocExt ".myp"
-#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
+#define MyServiceName "PulsenicsModbusViewerServer"
 
 [Setup]
 AppId={{{#MyAppId}}}
@@ -21,11 +16,10 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 
 ArchitecturesAllowed=x64compatible
-
 ArchitecturesInstallIn64BitMode=x64compatible
-ChangesAssociations=yes
-DisableProgramGroupPage=yes
 
+DisableProgramGroupPage=yes
+PrivilegesRequired=admin
 OutputBaseFilename=Pulsenics Modbus Viewer Installer
 Compression=lzma
 SolidCompression=yes
@@ -40,18 +34,16 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; nssm binary
-Source: "nssm\*"; DestDir: "{app}\nssm"; Flags: ignoreversion recursesubdirs createallsubdirs
-; config code
+; config
 Source: "server\config.example.json"; DestDir: "{app}\server"; Flags: ignoreversion
-Source: "server\config.json"; DestDir: "{app}\server"; Flags: ignoreversion
-; server code
+Source: "server\config.json"; DestDir: "{app}\server"; Flags: ignoreversion onlyifdoesntexist
+; server executable
 Source: "server\dist\*"; DestDir: "{app}\server\dist"; Flags: ignoreversion recursesubdirs createallsubdirs
-; client code
+; client
 Source: "client\out\pulsenics-modbus-viewer-app-win32-x64\*"; DestDir: "{app}\client"; Flags: ignoreversion recursesubdirs createallsubdirs
-; public
+; public assets
 Source: "public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs createallsubdirs
-; main code
+; scripts
 Source: "start.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "startClient.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "startServer.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -63,135 +55,82 @@ Source: "stopClient.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "stopServer.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
 
-[Registry]
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
-Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
-Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
+[InstallDelete]
+; Clean old client and server binaries on upgrade so stale files don't linger
+Type: filesandordirs; Name: "{app}\client"
+Type: filesandordirs; Name: "{app}\server\dist"
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\logo.ico
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: {app}\public\logo.ico; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: "{app}\public\logo.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app}"; IconFilename: "{app}\public\logo.ico"; Tasks: desktopicon
 
 [Run]
-Filename: {app}\run.bat; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall
+Filename: "{app}\run.bat"; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall
 
 [UninstallRun]
-Filename: "{app}\stop.bat"; Flags: runhidden; RunOnceId: "StopAllProcesses"
-Filename: "{app}\uninstall.bat"; Flags: runhidden; RunOnceId: "RemoveServices"
+Filename: "{sys}\sc.exe"; Parameters: "stop {#MyServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopService"
+Filename: "{sys}\sc.exe"; Parameters: "delete {#MyServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "DeleteService"
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM pulsenics-modbus-viewer-app.exe /T"; Flags: runhidden waituntilterminated; RunOnceId: "StopClient"
 
 [Code]
-var
-  IsUpgrade: Boolean;
-  ShouldRunExecuteUninstall: Boolean;
- 
-function RunPowerShellCommand(Command: string): Boolean;
-var
-  ResultCode: Integer;
-begin
-  // Run PowerShell with the specified command
-  Result := Exec(
-    ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
-    '-NoProfile -ExecutionPolicy Bypass -Command "' + Command + '"',
-    '',
-    SW_HIDE,
-    ewWaitUntilTerminated,
-    ResultCode
-  );
-  
-  // Check if the command was successful
-  if not Result then
-    MsgBox('Error executing PowerShell command: ' + Command, mbError, MB_OK);
-end;
-
 function IsAppAlreadyInstalled: Boolean;
 begin
-  Result := False;
-  if RegKeyExists(HKEY_LOCAL_MACHINE,
-       'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1') or
-     RegKeyExists(HKEY_CURRENT_USER,
-       'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1') then
-  begin
-    Result := True;
-  end;
+  Result :=
+    RegKeyExists(HKEY_LOCAL_MACHINE,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1') or
+    RegKeyExists(HKEY_CURRENT_USER,
+      'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1');
 end;
 
-procedure ExecuteUninstall;
+procedure StopRunningApp;
 var
   ResultCode: Integer;
-  UninstallAppPath: String;
 begin
-  UninstallAppPath := ExpandConstant('{app}\uninstall.bat');
-  if FileExists(UninstallAppPath) then
-  begin
-    ShellExec('', UninstallAppPath, '', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  end
-  else
-  begin
-    MsgBox('stop.bat file not found. Skipping process termination.', mbError, MB_OK);
-  end;
+  // Stop the service
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop {#MyServiceName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  // Kill the client process
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM pulsenics-modbus-viewer-app.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if (CurStep = ssInstall) and ShouldRunExecuteUninstall then
-  begin
-    // Now it's safe to use {app} as it has been initialized
-    ExecuteUninstall;
-  end;
+  if CurStep = ssInstall then
+    StopRunningApp;
 end;
 
 procedure InitializeWizard();
 var
-  ResultCode: Integer;
   UserChoice: Integer;
-  UninstallerPath: String;
   InstallPath: String;
+  UninstallerPath: String;
+  ResultCode: Integer;
 begin
-  IsUpgrade := IsAppAlreadyInstalled;
-  ShouldRunExecuteUninstall := False;
+  if not IsAppAlreadyInstalled then
+    Exit;
 
-  if IsUpgrade then
-  begin
-    // Give the user an option to repair or uninstall
-    UserChoice := MsgBox('The application is already installed. Would you like to repair or uninstall it?' + #13#10 +
-                         'Yes = Repair, No = Uninstall, Cancel = Exit setup.', mbConfirmation, MB_YESNOCANCEL);
+  UserChoice := MsgBox(
+    'The application is already installed.' + #13#10 +
+    'Yes = Repair/Upgrade, No = Uninstall, Cancel = Exit.',
+    mbConfirmation, MB_YESNOCANCEL);
 
-    case UserChoice of
-      IDYES:
+  case UserChoice of
+    IDYES:
+      MsgBox('Proceeding with upgrade...', mbInformation, MB_OK);
+    IDNO:
+      begin
+        if RegQueryStringValue(HKEY_LOCAL_MACHINE,
+             'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1',
+             'InstallLocation', InstallPath) or
+           RegQueryStringValue(HKEY_CURRENT_USER,
+             'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1',
+             'InstallLocation', InstallPath) then
         begin
-          // Proceed with the repair (continue with the installation)
-          MsgBox('Repairing the installation...', mbInformation, MB_OK);
-          ShouldRunExecuteUninstall := True; // Defer the call to ExecuteUninstall
-        end;
-      IDNO:
-        begin
-          RegQueryStringValue(HKEY_LOCAL_MACHINE, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{{#MyAppId}}}_is1', 'InstallLocation', InstallPath);
-          
-          // Manually construct the uninstaller path
           UninstallerPath := InstallPath + 'unins000.exe';
-                    
-          // Call the uninstaller and wait for it to complete
           ShellExec('', UninstallerPath, '', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
-
-          if ResultCode = 0 then
-          begin
-            Abort;  // Exit the installer after uninstallation
-          end
-          else
-          begin
-            // Handle the case where uninstallation failed
-            MsgBox('Uninstallation failed. Please try again.', mbError, MB_OK);
-            Abort;  // Exit installer on failure
-          end;
         end;
-      IDCANCEL:
-        begin
-          // Exit the installer on cancel
-          MsgBox('Exiting setup.', mbInformation, MB_OK);
-          Abort;  // Cancel installation and exit
-        end;
-    end;
+        Abort;
+      end;
+    IDCANCEL:
+      Abort;
   end;
 end;

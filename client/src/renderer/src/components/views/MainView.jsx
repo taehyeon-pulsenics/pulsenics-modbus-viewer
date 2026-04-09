@@ -120,7 +120,7 @@ const MainView = () => {
 
         <Content style={{ background: colorBgContainer }}>
           {modbusConnected ? (
-            <Tabs defaultActiveKey="0" items={items} renderTabBar={renderTabBar} />
+            <Tabs defaultActiveKey="0" items={items} renderTabBar={renderTabBar} destroyOnHidden />
           ) : (
             <ModbusConErrorView />
           )}

@@ -1,6 +1,5 @@
 @echo off
 
-:: === ELEVATE TO ADMIN IF NEEDED ===
 IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
     >nul 2>&1 "%SYSTEMROOT%\SysWOW64\cacls.exe" "%SYSTEMROOT%\SysWOW64\config\system"
 ) ELSE (
@@ -8,7 +7,6 @@ IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
 )
 
 if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
     goto UACPrompt
 ) else ( goto gotAdmin )
 
@@ -24,11 +22,4 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-set "SERVICE_NAME=PulsenicsModbusViewerServer"
-set "STOP_PATH=%~dp0stop.bat"
-
-:: stop all processes
-call "%STOP_PATH%"
-
-:: remove windows service
-sc delete "%SERVICE_NAME%"
+call "%~dp0stop.bat"

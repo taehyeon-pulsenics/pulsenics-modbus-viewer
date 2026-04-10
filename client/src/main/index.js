@@ -1,11 +1,9 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 let mainWindow = null
-let tray = null
-let isQuitting = false
 
 const lock = app.requestSingleInstanceLock()
 
@@ -23,14 +21,6 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
-    }
-  })
-
-  // Minimize to tray on close
-  mainWindow.on('close', (event) => {
-    if (!isQuitting) {
-      event.preventDefault()
-      mainWindow.hide()
     }
   })
 
@@ -83,10 +73,7 @@ function createWindow() {
         { type: 'separator' },
         {
           label: 'Exit',
-          click: () => {
-            isQuitting = true
-            app.quit()
-          }
+          click: () => app.quit()
         }
       ]
     },
@@ -156,57 +143,13 @@ function createWindow() {
   Menu.setApplicationMenu(menu)
 }
 
-function createTray() {
-  const trayIcon =
-    process.platform === 'win32'
-      ? join(__dirname, '../../public/logo.ico')
-      : join(__dirname, '../../public/icon.png')
-
-  tray = new Tray(trayIcon)
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Show App',
-      click: () => mainWindow.show()
-    },
-    {
-      label: 'Quit',
-      click: () => {
-        isQuitting = true
-        app.quit()
-      }
-    }
-  ])
-
-  tray.setToolTip('Pulsenics Modbus Viewer')
-  tray.setContextMenu(contextMenu)
-
-  tray.on('click', () => mainWindow.show())
-}
-
 if (!lock) {
-  isQuitting = true
   app.quit()
 } else {
   app.on('second-instance', () => {
     if (!mainWindow) return
-
-    // 1) If the window was minimized, restore it
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore()
-    }
-
-    // 2) If the window was hidden (not visible), show it
-    if (!mainWindow.isVisible()) {
-      mainWindow.show()
-    }
-
-    // 3) Finally, bring it to front/focus
+    if (mainWindow.isMinimized()) mainWindow.restore()
     mainWindow.focus()
-
-    // (Optional Windows hack if focus still fails:
-    // mainWindow.setAlwaysOnTop(true)
-    // mainWindow.setAlwaysOnTop(false)
-    // )
   })
 
   app.whenReady().then(() => {
@@ -219,18 +162,13 @@ if (!lock) {
     ipcMain.on('ping', () => console.log('pong'))
 
     createWindow()
-    createTray()
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
-      else mainWindow.show()
     })
   })
 
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      isQuitting = true
-      app.quit()
-    }
+    if (process.platform !== 'darwin') app.quit()
   })
 }

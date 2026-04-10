@@ -3,7 +3,6 @@
 #define MyAppId "B4C353AE-41B1-4934-8E46-A217453778D9"
 #define MyAppPublisher "Pulsenics Inc."
 #define MyAppURL "https://www.pulsenics.com/"
-#define MyServiceName "PulsenicsModbusViewerServer"
 
 [Setup]
 AppId={{{#MyAppId}}}
@@ -49,7 +48,6 @@ Source: "startClient.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "startServer.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "runSilently.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: "run.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "checkService.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "stop.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "stopClient.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "stopServer.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -68,8 +66,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\run.bat"; WorkingDir: "{app
 Filename: "{app}\run.bat"; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall
 
 [UninstallRun]
-Filename: "{sys}\sc.exe"; Parameters: "stop {#MyServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "StopService"
-Filename: "{sys}\sc.exe"; Parameters: "delete {#MyServiceName}"; Flags: runhidden waituntilterminated; RunOnceId: "DeleteService"
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM pulsenics-modbus-viewer-server.exe /T"; Flags: runhidden waituntilterminated; RunOnceId: "StopServer"
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM pulsenics-modbus-viewer-app.exe /T"; Flags: runhidden waituntilterminated; RunOnceId: "StopClient"
 
 [Code]
@@ -86,9 +83,7 @@ procedure StopRunningApp;
 var
   ResultCode: Integer;
 begin
-  // Stop the service
-  Exec(ExpandConstant('{sys}\sc.exe'), 'stop {#MyServiceName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  // Kill the client process
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM pulsenics-modbus-viewer-server.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM pulsenics-modbus-viewer-app.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 

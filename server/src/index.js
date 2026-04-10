@@ -23,11 +23,7 @@ const { actors } = initModbusStates(io);
 
 let intervals = pollModbus(CONFIG.probeIp, 502, actors, io);
 
-app.use(
-  cors({
-    origin: 'http://localhost:47822',
-  }),
-);
+app.use(cors());
 app.use(express.json());
 
 // Basic HTTP endpoint (if needed)

@@ -6,6 +6,18 @@ const {
   POLL_INTERVAL_MS,
 } = require('./constants');
 
+// Registers per CMU voltage block in AC input registers
+const AC_REGS_PER_CMU = 11520;
+// Offset where CMU voltage blocks start in AC input registers
+const AC_CMU_BASE = 1204;
+// CMUs assigned to each AC slave (0-indexed CMU numbers, 4 per slave)
+const AC_SLAVE_CMU_SLOTS = {
+  'AC 1': [0, 1, 2, 3],
+  'AC 2': [4, 5, 6, 7],
+  'AC 3': [8, 9, 10, 11],
+  'AC 4': [12, 13, 14, 15],
+};
+
 // Modbus protocol limits
 const LIMITS = {
   coils: 2000, // max bits per readCoils/readDiscreteInputs
@@ -480,14 +492,68 @@ function dispatchToActors(data, actorsConfig, actors) {
 }
 
 /**
+ * Returns a Set of 0-indexed CMU slot numbers that are currently connected,
+ * derived from the CONNECTED_CMUS actor state (16 boolean registers).
+ *
+ * @param {Object} actors
+ * @returns {Set<number>}
+ */
+function getConnectedCmuSlots(actors) {
+  const actor = actors[MODBUS_STATE.AC.CONNECTED_CMUS];
+  if (!actor)
+    return new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  const regs = actor.getSnapshot().context.regs;
+  const connected = new Set();
+  for (let i = 0; i < regs.length; i++) {
+    if (regs[i]) connected.add(i);
+  }
+  // If we have no data yet (all zeros on first boot), treat all as connected
+  return connected.size > 0
+    ? connected
+    : new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+}
+
+/**
+ * Builds a minimal list of {start, count} read ranges covering only the
+ * connected CMU slots assigned to this AC slave. Non-contiguous connected
+ * CMUs are merged into a single span to minimise round-trips.
+ *
+ * @param {string} slaveName - e.g. 'AC 1'
+ * @param {Set<number>} connectedSlots - global 0-indexed CMU slot numbers
+ * @returns {{ start: number, count: number, actorKey: string }[]}
+ */
+function buildAcCmuRanges(slaveName, connectedSlots) {
+  const slaveSlots = AC_SLAVE_CMU_SLOTS[slaveName];
+  if (!slaveSlots) return [];
+
+  const ranges = [];
+  for (let i = 0; i < slaveSlots.length; i++) {
+    const globalSlot = slaveSlots[i];
+    if (!connectedSlots.has(globalSlot)) continue;
+
+    // Local slot index within this slave (0–3)
+    const localSlot = i;
+    const start = AC_CMU_BASE + localSlot * AC_REGS_PER_CMU;
+    ranges.push({
+      start,
+      count: AC_REGS_PER_CMU,
+      actorKey: MODBUS_STATE.AC[`CMU_${globalSlot + 1}_VOLTAGE`],
+    });
+  }
+  return ranges;
+}
+
+/**
  * Polls a single Modbus slave sequentially across all register types.
+ * For AC slaves, only reads CMU voltage blocks for connected CMUs.
  * Register types within a slave must remain sequential since they share one TCP client.
  *
  * @param {Object} slave
  * @param {Object} actors
+ * @param {Set<number>|null} connectedCmuSlots - pass for AC slaves, null otherwise
  * @returns {Promise<boolean>}
  */
-async function pollSlave(slave, actors) {
+async function pollSlave(slave, actors, connectedCmuSlots = null) {
   const { name, client, readConfig } = slave;
 
   if (!client || !client.isOpen) {
@@ -548,21 +614,78 @@ async function pollSlave(slave, actors) {
     return false;
   }
 
-  try {
-    if (readConfig.inputRegs.count > 0) {
-      const inputs = await readInChunks(
-        client,
-        'readInputRegisters',
-        readConfig.inputRegs.start,
-        readConfig.inputRegs.count,
-        LIMITS.inputRegs,
+  // For AC slaves with connected-CMU awareness, replace the monolithic input
+  // register read with targeted per-CMU reads.
+  if (connectedCmuSlots !== null && AC_SLAVE_CMU_SLOTS[name]) {
+    const cmuRanges = buildAcCmuRanges(name, connectedCmuSlots);
+
+    if (cmuRanges.length === 0) {
+      console.debug(
+        `[pollSlave] ${name} — no connected CMUs, skipping input registers`,
       );
-      if (readConfig.inputRegs.actors)
-        dispatchToActors(inputs, readConfig.inputRegs.actors, actors);
     }
-  } catch (err) {
-    console.error(`Error polling input registers of ${name}:`, err.message);
-    return false;
+
+    // Read non-CMU input registers first (frequencies, current, probe voltage on AC 1)
+    const nonCmuActors = {};
+    if (readConfig.inputRegs.actors) {
+      for (const [key, val] of Object.entries(readConfig.inputRegs.actors)) {
+        if (!key.includes('CMU')) nonCmuActors[key] = val;
+      }
+    }
+
+    if (Object.keys(nonCmuActors).length > 0) {
+      // Non-CMU data lives at the start of the input register space (0..1204)
+      try {
+        const nonCmuData = await readInChunks(
+          client,
+          'readInputRegisters',
+          readConfig.inputRegs.start,
+          AC_CMU_BASE,
+          LIMITS.inputRegs,
+        );
+        dispatchToActors(nonCmuData, nonCmuActors, actors);
+      } catch (err) {
+        console.error(
+          `Error polling non-CMU input registers of ${name}:`,
+          err.message,
+        );
+        return false;
+      }
+    }
+
+    // Read each connected CMU's block individually
+    for (const { start, count, actorKey } of cmuRanges) {
+      try {
+        const data = await readInChunks(
+          client,
+          'readInputRegisters',
+          start,
+          count,
+          LIMITS.inputRegs,
+        );
+        actors[actorKey].send({ type: 'POLL', regs: data });
+      } catch (err) {
+        console.error(`Error polling ${actorKey} of ${name}:`, err.message);
+        return false;
+      }
+    }
+  } else {
+    try {
+      if (readConfig.inputRegs.count > 0) {
+        const inputs = await readInChunks(
+          client,
+          'readInputRegisters',
+          readConfig.inputRegs.start,
+          readConfig.inputRegs.count,
+          LIMITS.inputRegs,
+        );
+        if (readConfig.inputRegs.actors)
+          dispatchToActors(inputs, readConfig.inputRegs.actors, actors);
+      }
+    } catch (err) {
+      console.error(`Error polling input registers of ${name}:`, err.message);
+      return false;
+    }
   }
 
   console.debug(`[pollSlave] ${name} completed in ${Date.now() - t0}ms`);
@@ -577,15 +700,29 @@ const SLAVE_GROUPS = {
 
 /**
  * Polls a group of slaves in parallel.
+ * For AC slaves, reads connected-CMU state first and passes it down so each
+ * slave only fetches voltage blocks for its connected CMUs.
  *
  * @param {Object[]} slaves
  * @param {Object} actors
+ * @param {boolean} isAcGroup
  * @returns {Promise<boolean>}
  */
-async function pollSlaveGroup(slaves, actors) {
+async function pollSlaveGroup(slaves, actors, isAcGroup = false) {
+  const connectedCmuSlots = isAcGroup ? getConnectedCmuSlots(actors) : null;
+
+  if (isAcGroup) {
+    console.debug(
+      `[pollSlaveGroup] AC connected CMU slots: [${[...connectedCmuSlots].join(', ')}]`,
+    );
+  }
+
   const results = await Promise.all(
     slaves.map((slave) =>
-      withTimeout(pollSlave(slave, actors), slave.timeoutMs).catch((e) => {
+      withTimeout(
+        pollSlave(slave, actors, connectedCmuSlots),
+        slave.timeoutMs,
+      ).catch((e) => {
         console.error(`Slave ${slave.name} timed out or failed:`, e.message);
         return false;
       }),
@@ -604,14 +741,23 @@ async function pollSlaveGroup(slaves, actors) {
  * @param {string} host
  * @param {number} port
  * @param {number} intervalMs
+ * @param {boolean} isAcGroup
  * @returns {NodeJS.Timeout}
  */
-function startGroupInterval(slaves, actors, io, host, port, intervalMs) {
+function startGroupInterval(
+  slaves,
+  actors,
+  io,
+  host,
+  port,
+  intervalMs,
+  isAcGroup = false,
+) {
   let busy = false;
   return setInterval(() => {
     if (!busy) {
       busy = true;
-      pollSlaveGroup(slaves, actors)
+      pollSlaveGroup(slaves, actors, isAcGroup)
         .then((ok) => {
           broadcast_connection(io, ok);
           if (!ok) initModbusConnections(host, port);
@@ -658,6 +804,7 @@ function pollModbus(host, port, actors, io, prevIntervals = {}) {
       host,
       port,
       POLL_INTERVAL_MS.AC,
+      true, // isAcGroup — enables connected-CMU-aware polling
     ),
     misc: startGroupInterval(
       SLAVE_GROUPS.MISC,
